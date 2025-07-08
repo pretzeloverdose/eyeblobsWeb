@@ -1,6 +1,7 @@
 This is a project designed to aid traditional artists with digital tools such as a reverse lightbox and colour picker, on a tablet or phone.
 
-Note: to use the camera in the reverse lightbox, SSL must be used.
+Note: To use the camera in the reverse lightbox, SSL must be used.
+Note: When in some directories other than "/" you may have to set basePath on line 30 of next.config.ts
 
 ## Getting Started
 
