@@ -173,7 +173,7 @@ const styles = {
       width: '36px',
       height: '14px',
       borderRadius: '2px',
-      background: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
+      background: `rgba(${color.r}, ${color.g}, ${color.b}, 1)`,
     } as React.CSSProperties,
     swatch: {
       padding: '5px',
