@@ -299,7 +299,7 @@ export default function Page4() {
                     <SketchPicker color={color} onChange={handleChange} />
                 </div> : null}
             </div>
-            <div className="editImageWrap" style={{ height: "100vh"}}>
+            <div className="editImageWrap" style={{ height: '100vh'}}>
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                     <TransformWrapper
