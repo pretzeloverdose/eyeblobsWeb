@@ -297,7 +297,7 @@ function rgbToHex(r: number, g: number, b: number): string {
                                                 </div>
                                             </>
                                         )}
-
+                                        {!imageSrc && <p>No image found. Please upload an image first.</p> }
                                     </div>
                                 </TransformComponent>
                             )}

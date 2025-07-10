@@ -203,7 +203,7 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
               />
             </>
           )}
-                  <p>No image found. Please upload an image first.</p>
+          {!imageSrc && <p>No image found. Please upload an image first.</p> }
         </div>
       </TransformComponent>
     )}
