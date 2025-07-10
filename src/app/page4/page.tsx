@@ -23,9 +23,9 @@ export default function Page4() {
     positionY: 0
   });
   const [color, setColor] = useState({
-      r: '241',
-      g: '112',
-      b: '19'
+      r: 241,
+      g: 112,
+      b: 19
     });
     const [strokeColor, setStrokeColor] = useState('#000000');
   const [displayColorPicker, setdisplayColorPicker] = useState(false);
