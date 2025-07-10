@@ -21,14 +21,14 @@ export const usePersistentGrid = (keyPrefix: string = 'grid') => {
   });
 
   const [color, setColor] = useState(() => {
-    if (typeof window === 'undefined') return { r: 0, g: 0, b: 0 };
+    if (typeof window === 'undefined') return { r: 80, g: 227, b: 194 };
     const saved = localStorage.getItem('gridColor');
-    return saved ? JSON.parse(saved) : { r: 0, g: 0, b: 0 };
+    return saved ? JSON.parse(saved) : { r: 80, g: 227, b: 194 };
   });
 
   const [strokeColor, setStrokeColor] = useState(() => {
-    if (typeof window === 'undefined') return '#000000';
-    return localStorage.getItem('strokeColor') || '#000000';
+    if (typeof window === 'undefined') return '#50e3c3';
+    return localStorage.getItem('strokeColor') || '#50e3c3';
   });
 
   // Save to localStorage whenever state changes
