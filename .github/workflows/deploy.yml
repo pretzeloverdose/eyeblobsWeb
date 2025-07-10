@@ -30,4 +30,4 @@ jobs:
         timeout: 30s
         source: "dist"
         target: "/var/www/html/eyeblobs/app"
-        strip_components: 1  # 👈 removes the top-level "dist" directory
+        strip_components: 1  
