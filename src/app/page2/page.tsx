@@ -1,5 +1,6 @@
 "use client";
 
+import { usePersistentTransform } from "@/hooks/usePersistentTransform";
 import { useEffect, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 
@@ -8,12 +9,23 @@ export default function CameraFeed() {
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [transformState, setTransformState] = useState({
-    scale: 1,
-    positionX: 0,
-    positionY: 0
-  });
-  const [opacity, setOpacity] = useState(0.5); // Default to 50 percent
+  const { 
+    transformState, 
+    setTransformState,
+    opacity,
+    setOpacity
+  } = usePersistentTransform();
+
+  // Initialize transform with saved state
+  useEffect(() => {
+    if (transformRef.current && transformState) {
+      transformRef.current.setTransform(
+        transformState.positionX,
+        transformState.positionY,
+        transformState.scale
+      );
+    }
+  }, [transformState, imageSrc]);
 
   const handleTransformEnd = () => {
     if (!transformRef.current || !transformRef.current.state) return;
@@ -77,6 +89,15 @@ export default function CameraFeed() {
           initialPositionY={transformState.positionY}
           onPanningStop={handleTransformEnd}
           onPinchingStop={handleTransformEnd}
+          onInit={(ref) => {
+            transformRef.current = ref;
+            // Apply saved transform immediately after initialization
+            ref.setTransform(
+              transformState.positionX,
+              transformState.positionY,
+              transformState.scale
+            );
+          }}
           minScale={0.1}
           limitToBounds={false}
         >
