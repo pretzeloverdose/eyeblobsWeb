@@ -13,6 +13,8 @@ export default function Page4() {
     const transformGridRef = useRef<ReactZoomPanPinchRef | null>(null);
     const [displayColorPicker, setdisplayColorPicker] = useState(false);
     const [virtualRatio, setVirtualRatio] = useState(0.0);
+    const [imageLoaded, setImageLoaded] = useState(false);
+
 
     // Use the persistent hook for all state
     const {
@@ -82,12 +84,17 @@ export default function Page4() {
 
     const HozAxis = () => {
         useEffect(() => {
-            if (imgRef.current?.width != null) {
-                setVirtualRatio(imgRef.current?.width / parseFloat(gridWidth));
+            if (imgRef.current?.width != null && gridWidth) {
+                setVirtualRatio(imgRef.current.width / parseFloat(gridWidth));
             }
         }, [imgRef.current?.width, gridWidth]);
+
+        if (!imgRef.current || !imgRef.current.width || !gridWidth || virtualRatio === 0.0) {
+            return null;
+        }
+
         return (
-            <div style={{ position: 'relative', marginTop: -20 }}>
+            <div style={{ position: 'relative' }}>
                 {Array.from({ length: parseInt(gridRows) }).map((_, i) => {
                     if (i === 0) return null;
                     const x = virtualRatio * i * parseFloat(gridCellWidth);
@@ -97,47 +104,62 @@ export default function Page4() {
                             <div style={{ left: x, float: 'left', display: 'inline', position: 'absolute', color: cssColor }}>{realPos.toFixed(1)}</div>
                             <div style={{ left: 0, top: x, display: 'block', position: 'absolute', color: cssColor }}>{realPos.toFixed(1)}</div>
                         </React.Fragment>
-                    )
+                    );
                 })}
             </div>
-        )
-    }
+        );
+    };
 
     const GridLines = () => {
         useEffect(() => {
-            if (imgRef.current?.width != null) {
-                setVirtualRatio(imgRef.current?.width / parseFloat(gridWidth));
+            if (imgRef.current?.width != null && gridWidth) {
+                setVirtualRatio(imgRef.current.width / parseFloat(gridWidth));
             }
         }, [imgRef.current?.width, gridWidth]);
 
+        if (!imgRef.current || !imgRef.current.width || !gridWidth || virtualRatio === 0.0) {
+            return null;
+        }
 
+        // todo: correct naming for x y and cols
+        const lines = [];
+        let yPos = 0;
+        let xPos = 0;
+        const cellHeight = parseFloat(gridCellWidth) * virtualRatio;
+
+        while (yPos < (imgRef.current?.width || 0)) {
+            lines.push(
+                <line
+                    key={`vertical-${yPos}`}
+                    x1={yPos}
+                    y1={0}
+                    x2={yPos}
+                    y2={imgRef.current?.height}
+                    stroke={strokeColor}
+                    strokeWidth={1}
+                />
+            );
+            yPos += cellHeight;
+        }
+
+        while (xPos < (imgRef.current?.height || 0)) {
+            lines.push(
+                <line
+                    key={`horizontal-${xPos}`}
+                    x1={0}
+                    y1={xPos}
+                    x2={imgRef.current?.width}
+                    y2={xPos}
+                    stroke={strokeColor}
+                    strokeWidth={1}
+                />
+            );
+            xPos += cellHeight;
+        }
 
         return (
-            <svg height={imgRef.current?.width} width={imgRef.current?.width}>
-                {Array.from({ length: parseInt(gridRows) }).map((_, i) => {
-                    const x = virtualRatio * i * parseFloat(gridCellWidth);
-                    const y = virtualRatio * i * parseFloat(gridCellWidth);
-                    return (
-                        <React.Fragment key={i}>
-                            <line
-                                x1={0}
-                                y1={y}
-                                x2={imgRef.current?.width}
-                                y2={y}
-                                stroke={strokeColor}
-                                strokeWidth={1}
-                            />
-                            <line
-                                x1={x}
-                                y1={0}
-                                x2={x}
-                                y2={imgRef.current?.height}
-                                stroke={strokeColor}
-                                strokeWidth={1}
-                            />
-                        </React.Fragment>
-                    );
-                })}
+            <svg height={imgRef.current?.height} width={imgRef.current?.width} key='gridLines'>
+                {lines}
             </svg>
         );
     };
@@ -207,7 +229,7 @@ export default function Page4() {
             </div>
             <div style={{ margin: 10 }}>
                 <p>
-                    Number of rows:
+                    Number of columns:
                     <select
                         style={{ marginLeft: '10px' }}
                         name="setRows"
@@ -263,16 +285,24 @@ export default function Page4() {
                                 <div style={{ position: 'relative' }}>
                                     {imageSrc && (
                                         <>
-                                            <div style={{ position: 'absolute', zIndex: 100 }} id='GridBox'>
-                                                <HozAxis />
-                                                <GridLines />
-                                            </div>
-                                            <div style={{ position: 'relative', zIndex: 50, marginTop: -20 }}>
+                                            {imageLoaded && (
+                                                <div style={{ position: 'absolute', zIndex: 100 }} id='GridBox'>
+                                                    <HozAxis />
+                                                    <GridLines />
+                                                </div>
+                                            )}
+                                            <div style={{ position: 'relative', zIndex: 50 }}>
                                                 <img
                                                     src={imageSrc}
                                                     alt="Saved Crop"
                                                     ref={(img) => {
                                                         imgRef.current = img;
+                                                    }}
+                                                    onLoad={() => {
+                                                        setImageLoaded(true);
+                                                        if (imgRef.current?.width) {
+                                                            setVirtualRatio(imgRef.current.width / parseFloat(gridWidth));
+                                                        }
                                                     }}
                                                     style={{ display: 'block', width: '100%' }}
                                                 />
