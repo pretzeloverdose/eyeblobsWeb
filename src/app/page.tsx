@@ -187,7 +187,7 @@ function isLocalStorageAvailable() {
     <>
     <div className="App">
       <div className="Crop-Controls" style={{justifyContent: 'center', marginTop: '50px', marginBottom: '50px'}}>
-      <p>Select an image to use for your reference</p>
+      <p>Select an image to use for your reference on the site</p>
         <input type="file" accept="image/*" onChange={onSelectFile} />
       </div>
       {!!imgSrc && (
