@@ -106,8 +106,8 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
                     const realPos = i * parseFloat(gridCellWidth);
                     return (
                         <React.Fragment key={i}>
-                            <div style={{left: x, float: 'left', display: 'inline', position: 'absolute'}}>{realPos}</div>
-                            <div style={{left: imgRef.current?.width, top: x, display: 'block', position: 'absolute'}}>{realPos}</div>
+                            <div style={{left: x, float: 'left', display: 'inline', position: 'absolute'}}>{realPos.toFixed(1)}</div>
+                            <div style={{left: imgRef.current?.width, top: x, display: 'block', position: 'absolute'}}>{realPos.toFixed(1)}</div>
                         </React.Fragment>
                     )
                 })}
