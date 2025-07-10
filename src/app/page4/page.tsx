@@ -9,8 +9,8 @@ import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'reac
 export default function Page4() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
-    const [gridWidth, setGridWidth] = useState('');
-    const [gridRows, setGridRows] = useState('');
+    const [gridWidth, setGridWidth] = useState('21');
+    const [gridRows, setGridRows] = useState('2');
     const [gridCellWidth, setGridCellWidth] = useState('');
     const [virtualRatio, setVirtualRatio] = useState(0.0);
   const gridRef = useRef<number | null>(null);
@@ -48,6 +48,7 @@ export default function Page4() {
     if (savedImage) {
       setImageSrc(savedImage);
     }
+    calculateCellWidth(gridRows);
   }, []);
 
 const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -211,72 +212,98 @@ function rgbToHex(r: number, g: number, b: number): string {
   );
 }
 
+    
+
     return (
         <div>
-            <div>
-                <p>Image width: <input name='setWidth' onChange={e => setGridWidth(e.target.value)} value={gridWidth?.toString()} />cm</p>
-                <p>Number of rows: <input name='setRows' onChange={e => { setGridRows(e.target.value), calculateCellWidth(e.target.value)}} value={gridRows?.toString()} /></p>
-                <p>Cell width: <input name='setCellWidth' onChange={e => { setGridCellWidth(e.target.value), calculateRows(e.target.value)}} value={gridCellWidth?.toString()} />cm</p>
-                <div style={styles.default.swatch} onClick={ handleClick }>Set line colour 
-                <div style={ styles.default.color } />
-                </div>{ displayColorPicker ? <div style={ styles.default.popover }>
-          <div style={ styles.default.cover } onClick={ handleClose }/>
-          <SketchPicker color={ color } onChange={ handleChange } />
-        </div> : null }
-        </div>
-            <div className="editImageWrap">
-                <canvas ref={canvasRef} style={{ display: 'none' }} />
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                    <TransformWrapper
-                        ref={transformRef}
-                        initialScale={transformState.scale}
-                        initialPositionX={transformState.positionX}
-                        initialPositionY={transformState.positionY}
-                        onPanningStop={handleTransformEnd}
-                        onPinchingStop={handleTransformEnd}
-                        minScale={0.1}
-                        limitToBounds={false}
+            <div style={{ margin: 10 }}>
+                <div style={{ margin: 10 }}></div>
+                <div style={{ width: 100, float: 'left' }}>Image width: </div><input name='setWidth' style={{ width: '80px', padding: '3px' }} onChange={e => setGridWidth(e.target.value)} value={gridWidth?.toString()} />cm
+            </div>
+            <div style={{ margin: 10 }}>
+                <p>
+                    Number of rows:
+                    <select
+                    style={{marginLeft: '10px'}}
+                        name="setRows"
+                        onChange={(e) => {
+                            setGridRows(e.target.value);
+                            calculateCellWidth(e.target.value);
+                        }}
+                        value={gridRows}
                     >
-                        {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
-                            <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                                <div style={{ position: 'relative' }}>
-                                    {imageSrc && (
-                                        <>
-                                        <div style={{position: 'absolute', zIndex: 100}} id='GridBox'>
-                                            <HozAxis />
-                                            <GridLines />
-                                        </div>
-                                        <div style={{position: 'relative', zIndex: 50, marginTop: -20}}>
-                                            <img
-                                                src={imageSrc}
-                                                alt="Saved Crop"
-                                                ref={(img) => {
-                                                    imgRef.current = img;
-                                                }}
-                                                style={{ display: 'block', width: '100%' }}
-                                            />
-                                            <div
-                                                onClick={handleOverlayClick}
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    bottom: 0,
-                                                    cursor: 'crosshair',
-                                                    zIndex: 10
-                                                }}
-                                            />
-                                            </div>
-                                        </>
-                                    )}
-                                    {!imageSrc && <p>No image found. Please upload an image first.</p> }
-                                </div>
-                            </TransformComponent>
-                        )}
-                    </TransformWrapper>
+                        {Array.from({ length: 9 }, (_, i) => i + 2).map((num) => (
+                            <option key={num} value={num}>
+                                {num}
+                            </option>
+                        ))}
+                    </select>
+                </p>
+            </div>
+                <div style={{ margin: 10 }}>
+                    <div style={{ width: 100, float: 'left' }}>Cell width: </div><input name='setCellWidth' style={{ width: '80px', padding: '3px' }} onChange={e => { setGridCellWidth(e.target.value), calculateRows(e.target.value) }} value={gridCellWidth?.toString()} />cm
+
+                <div style={{ margin: 10 }}></div>
+                    <div style={styles.default.swatch} onClick={handleClick}>Set line colour
+                        <div style={styles.default.color} />
+                    </div>{displayColorPicker ? <div style={styles.default.popover}>
+                        <div style={styles.default.cover} onClick={handleClose} />
+                        <SketchPicker color={color} onChange={handleChange} />
+                    </div> : null}
+                </div>
+                <div className="editImageWrap">
+                    <canvas ref={canvasRef} style={{ display: 'none' }} />
+                    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <TransformWrapper
+                            ref={transformRef}
+                            initialScale={transformState.scale}
+                            initialPositionX={transformState.positionX}
+                            initialPositionY={transformState.positionY}
+                            onPanningStop={handleTransformEnd}
+                            onPinchingStop={handleTransformEnd}
+                            minScale={0.1}
+                            limitToBounds={false}
+                        >
+                            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+                                <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        {imageSrc && (
+                                            <>
+                                                <div style={{ position: 'absolute', zIndex: 100 }} id='GridBox'>
+                                                    <HozAxis />
+                                                    <GridLines />
+                                                </div>
+                                                <div style={{ position: 'relative', zIndex: 50, marginTop: -20 }}>
+                                                    <img
+                                                        src={imageSrc}
+                                                        alt="Saved Crop"
+                                                        ref={(img) => {
+                                                            imgRef.current = img;
+                                                        }}
+                                                        style={{ display: 'block', width: '100%' }}
+                                                    />
+                                                    <div
+                                                        onClick={handleOverlayClick}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: 0,
+                                                            left: 0,
+                                                            right: 0,
+                                                            bottom: 0,
+                                                            cursor: 'crosshair',
+                                                            zIndex: 10
+                                                        }}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+
+                                    </div>
+                                </TransformComponent>
+                            )}
+                        </TransformWrapper>
+                    </div>
                 </div>
             </div>
-        </div>
   );
 }
