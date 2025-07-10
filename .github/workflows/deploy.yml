@@ -19,6 +19,9 @@ jobs:
     - name: Build project
       run: npm run build
 
+    - name: Check dist folder exists
+      run: ls -la dist
+
     - name: Deploy to Lightsail
       uses: appleboy/scp-action@v0.1.6
       with:
