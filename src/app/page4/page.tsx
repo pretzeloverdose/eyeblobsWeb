@@ -323,7 +323,7 @@ export default function Page4() {
                     >
                         {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
                             <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                                <div style={{ position: 'relative' }}>edit
+                                <div style={{ position: 'relative' }}>
                                     {imageSrc && (
                                         <>
                                             {imageLoaded && (
