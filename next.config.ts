@@ -27,7 +27,7 @@ const nextConfig = {
   },
   
   // Optional: Configure base path if your site is hosted in a subdirectory
-  basePath: '/eyeblobs/app'
+  // basePath: '/eyeblobs/app'
 };
 
 module.exports = nextConfig;

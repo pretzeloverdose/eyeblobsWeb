@@ -6,6 +6,7 @@ export default function Navbar() {
     <nav className={styles.navbar}>
       <Link href="/">Upload</Link>
       <Link href="/page2">Lightbox</Link>
+      <Link href="/page4">Grid</Link>
       <Link href="/page3">Edit</Link>
     </nav>
   );
