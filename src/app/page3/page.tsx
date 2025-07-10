@@ -10,6 +10,52 @@ function hexToRgb(hex: string) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+function hexToCmyk(hex: string): string {
+  // Remove "#" if present
+  hex = hex.replace(/^#/, "");
+
+  // Validate hex length (3 or 6)
+  if (hex.length !== 3 && hex.length !== 6) {
+    throw new Error("Invalid hex color length");
+  }
+
+  // Parse shorthand hex (#fff → #ffffff)
+  if (hex.length === 3) {
+    hex = hex.split("").map(char => char + char).join("");
+  }
+
+  // Parse RGB components
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Normalize RGB to 0–1
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+
+  // Calculate K (black) component
+  const k = 1 - Math.max(rNorm, gNorm, bNorm);
+
+  // Handle pure black case
+  if (k === 1) {
+    return "C:0 M:0 Y:0 K:100";
+  }
+
+  // Calculate CMYK components (0–100 scale)
+  const c = ((1 - rNorm - k) / (1 - k)) * 100;
+  const m = ((1 - gNorm - k) / (1 - k)) * 100;
+  const y = ((1 - bNorm - k) / (1 - k)) * 100;
+  const kScaled = k * 100;
+
+  // Round to nearest integer (optional, adjust as needed)
+  const format = (val: number) => Math.round(val);
+
+  return `C:${format(c)} M:${format(m)} Y:${format(y)} K:${format(kScaled)}`;
+}
+
+
+
 export default function Page3() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -224,6 +270,7 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
               alignItems: 'center',
               gap: '1rem'
             }}>
+                <p>Tap image above to get pixel colour</p>
               <div style={{
                 width: '120px',
                 height: '150px',
@@ -235,6 +282,7 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
               <div>
                 <p>HEX: {pixelColor}</p>
                 <p>RGB: {hexToRgb(pixelColor)}</p>
+                <p>CMYK: {hexToCmyk(pixelColor)}</p>
               </div>
             </div>
           )}

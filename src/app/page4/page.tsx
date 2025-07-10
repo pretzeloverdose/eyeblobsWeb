@@ -84,31 +84,72 @@ export default function Page4() {
 
     const HozAxis = () => {
         useEffect(() => {
-            if (imgRef.current?.width != null && gridWidth) {
+            if (imgRef.current?.width && gridWidth) {
                 setVirtualRatio(imgRef.current.width / parseFloat(gridWidth));
             }
         }, [imgRef.current?.width, gridWidth]);
 
-        if (!imgRef.current || !imgRef.current.width || !gridWidth || virtualRatio === 0.0) {
+        if (!imgRef.current || !imgRef.current.width || !imgRef.current.height || virtualRatio === 0.0) {
             return null;
         }
 
-        return (
-            <div style={{ position: 'relative' }}>
-                {Array.from({ length: parseInt(gridRows) }).map((_, i) => {
-                    if (i === 0) return null;
-                    const x = virtualRatio * i * parseFloat(gridCellWidth);
-                    const realPos = i * parseFloat(gridCellWidth);
-                    return (
-                        <React.Fragment key={i}>
-                            <div style={{ left: x, float: 'left', display: 'inline', position: 'absolute', color: cssColor, fontSize: "1em" }}>{realPos.toFixed(1)}</div>
-                            <div style={{ left: 0, top: x, display: 'block', position: 'absolute', color: cssColor, fontSize: "1em" }}>{realPos.toFixed(1)}</div>
-                        </React.Fragment>
-                    );
-                })}
-            </div>
-        );
+        const cellHeight = parseFloat(gridCellWidth) * virtualRatio;
+        const labels = [];
+
+        // Horizontal labels for vertical grid lines (along top edge)
+        let xPos = 0;
+        while (xPos < imgRef.current.width) {
+            const realValue = xPos / virtualRatio;
+            if (realValue > 0.01) {
+                labels.push(
+                    <div
+                        key={`hoz-${xPos}`}
+                        style={{
+                            position: 'absolute',
+                            left: xPos + 15,
+                            top: 0,
+                            transform: 'translateX(-50%)',
+                            color: cssColor,
+                            fontSize: '0.9em',
+                            zIndex: 200,
+                        }}
+                    >
+                        {realValue.toFixed(1)}
+                    </div>
+                );
+            }
+            xPos += cellHeight;
+        }
+
+        // Vertical labels for horizontal grid lines (along left edge)
+        let yPos = 0;
+        while (yPos < imgRef.current.height) {
+            const realValue = yPos / virtualRatio;
+            if (realValue > 0.01) {
+                labels.push(
+                    <div
+                        key={`vert-${yPos}`}
+                        style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: yPos + 7,
+                            transform: 'translateY(-50%)',
+                            color: cssColor,
+                            fontSize: '0.9em',
+                            zIndex: 200,
+                        }}
+                    >
+                        {realValue.toFixed(1)}
+                    </div>
+                );
+            }
+            yPos += cellHeight;
+        }
+
+        return <div style={{ position: 'absolute', width: '100%', height: '100%' }}>{labels}</div>;
     };
+
+
 
     const GridLines = () => {
         useEffect(() => {
