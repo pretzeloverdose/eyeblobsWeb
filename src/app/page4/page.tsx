@@ -101,8 +101,8 @@ export default function Page4() {
                     const realPos = i * parseFloat(gridCellWidth);
                     return (
                         <React.Fragment key={i}>
-                            <div style={{ left: x, float: 'left', display: 'inline', position: 'absolute', color: cssColor }}>{realPos.toFixed(1)}</div>
-                            <div style={{ left: 0, top: x, display: 'block', position: 'absolute', color: cssColor }}>{realPos.toFixed(1)}</div>
+                            <div style={{ left: x, float: 'left', display: 'inline', position: 'absolute', color: cssColor, fontSize: "1em" }}>{realPos.toFixed(1)}</div>
+                            <div style={{ left: 0, top: x, display: 'block', position: 'absolute', color: cssColor, fontSize: "1em" }}>{realPos.toFixed(1)}</div>
                         </React.Fragment>
                     );
                 })}
