@@ -20,7 +20,7 @@
 # production
 /build
 /dist
-next.config.js
+next.config.ts
 
 # misc
 .DS_Store
