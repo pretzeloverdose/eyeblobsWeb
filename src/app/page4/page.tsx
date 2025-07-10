@@ -23,11 +23,12 @@ export default function Page4() {
     positionY: 0
   });
   const [color, setColor] = useState({
-      r: 241,
-      g: 112,
-      b: 19
+      r: 0,
+      g: 0,
+      b: 0
     });
     const [strokeColor, setStrokeColor] = useState('#000000');
+    const cssColor = `rgba(${color.r}, ${color.g}, ${color.b}, 1)`;
   const [displayColorPicker, setdisplayColorPicker] = useState(false);
 
   const handleTransformEnd = () => {
@@ -102,12 +103,13 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
         return (
             <div style={{position: 'relative', marginTop: -20}}>
                 {Array.from({ length: parseInt(gridRows) }).map((_, i) => {
+                    if (i === 0) return null;
                     const x = virtualRatio * i * parseFloat(gridCellWidth);
                     const realPos = i * parseFloat(gridCellWidth);
                     return (
                         <React.Fragment key={i}>
-                            <div style={{left: x, float: 'left', display: 'inline', position: 'absolute'}}>{realPos.toFixed(1)}</div>
-                            <div style={{left: imgRef.current?.width, top: x, display: 'block', position: 'absolute'}}>{realPos.toFixed(1)}</div>
+                            <div style={{left: x, float: 'left', display: 'inline', position: 'absolute', color: cssColor }}>{realPos.toFixed(1)}</div>
+                            <div style={{left: 0, top: x, display: 'block', position: 'absolute', color: cssColor}}>{realPos.toFixed(1)}</div>
                         </React.Fragment>
                     )
                 })}
