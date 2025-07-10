@@ -17,15 +17,7 @@ jobs:
       run: npm install
 
     - name: Build project
-      run: |
-        set -e
-        npm run build
-    
-    - name: Check build log
-      run: cat .next/build-manifest.json || echo "Build manifest not found"
-
-    - name: Check dist folder exists
-      run: ls -la out
+      run: npm run build
 
     - name: Deploy to Lightsail
       uses: appleboy/scp-action@v0.1.6
@@ -36,6 +28,6 @@ jobs:
         port: 22
         debug: true  # Enable verbose output
         timeout: 30s
-        source: "."
+        source: "dist"
         target: "/var/www/html/eyeblobs/app"
         strip_components: 1  
