@@ -83,6 +83,8 @@ export default function Page3() {
     return '';
   });
   const [paletteData, setPaletteData] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
 
   const handlePaletteAction = (data: any) => {
     console.log("Received from PrimaryPaletteGrid:", data);
@@ -389,64 +391,101 @@ const applyPalette = () => {
   setShowStrengthModal(true);
 };
 
-const applyZornFilterWithStrength = () => {
-  setShowStrengthModal(false);
-  ApplyColorFilter(parseInt(strengthValue));
+const runWithProcessingOverlay = async (task: () => Promise<void>) => {
+  setIsProcessing(true);
+  try {
+    await task();
+  } finally {
+    setIsProcessing(false);
+  }
 };
 
+const applyZornFilterWithStrength = () => {
+  setShowStrengthModal(false);
+  runWithProcessingOverlay(() =>
+    ApplyColorFilter(parseInt(strengthValue))
+  );
+};
+
+
 // Modify the existing ApplyColorFilter to accept strength parameter
-const ApplyColorFilter = async (strength: number = 30) => {
-  if (!imageSrc) return;
+const ApplyColorFilter = async (strength: number = 30): Promise<void> => {
+  return new Promise((resolve) => {
+    if (!imageSrc) return resolve();
 
-  const paletteToUseLocal = localStorage.getItem('selectedPalette') || 'Zorn';
+    const paletteToUseLocal = localStorage.getItem('selectedPalette') || 'Zorn';
+    const palettesVar: Record<string, any> = palettes;
 
-  // Define your palettes (assuming these are defined elsewhere in your code)
-  const palettesVar: Record<string, any> = palettes;
+    let loadImage = new Image();
+    loadImage.src = imageSrc;
 
-  let selectedPalette: any;
+    loadImage.onload = async () => {
+      const selectedPalette = paletteToUseLocal === 'Image'
+        ? await extractImageColors()
+        : palettesVar[paletteToUseLocal] || zornPalette;
 
-  if (paletteToUse == "Image" ) {
-    selectedPalette = await extractImageColors();
-  } else {
-    // Get the selected palette based on paletteToUse
-    console.log("a " + paletteToUseLocal);
-    console.log("b " + palettesVar[paletteToUseLocal]);
-    selectedPalette = palettesVar[paletteToUseLocal] || zornPalette; // fallback to zornPalette if not found
-  }
-  const image = new Image();
-  image.src = imageSrc;
+      const canvas = document.createElement('canvas');
+      canvas.width = loadImage.naturalWidth;
+      canvas.height = loadImage.naturalHeight;
 
-  image.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve();
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      ctx.drawImage(loadImage, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
 
-    ctx.drawImage(image, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const hslOriginal = rgbToHsl(data[i], data[i + 1], data[i + 2]);
+        const newHSL = findWeightedMidpointHsl(hslOriginal, selectedPalette, strength);
+        const [r, g, b] = hslToRgb(newHSL[0], newHSL[1], newHSL[2]);
+        data[i] = r;
+        data[i + 1] = g;
+        data[i + 2] = b;
+      }
 
-    for (let i = 0; i < data.length; i += 4) {
-      let hslValueOriginal = rgbToHsl(data[i], data[i + 1], data[i + 2]);
-      let newPixel: any;
-      newPixel = findWeightedMidpointHsl(hslValueOriginal, selectedPalette, strength);
-      let newRGB = hslToRgb(newPixel[0], newPixel[1], newPixel[2]);
-      data[i] = newRGB[0];
-      data[i + 1] = newRGB[1];
-      data[i + 2] = newRGB[2];
-    }
+      ctx.putImageData(imageData, 0, 0);
+      const filteredImageUrl = canvas.toDataURL('image/png');
+      setImageSrc(filteredImageUrl);
+      localStorage.setItem('savedImage', filteredImageUrl);
+      resolve();
+    };
+  });
+};
 
-    ctx.putImageData(imageData, 0, 0);
-    const filteredImageUrl = canvas.toDataURL('image/png');
-    setImageSrc(filteredImageUrl);
-    localStorage.setItem('savedImage', filteredImageUrl);
-  };
-}
+
 
   return (
     <div>
+      {isProcessing && (
+  <div style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+    flexDirection: 'column',
+    color: 'white',
+    fontSize: '1.5rem',
+    fontWeight: 'bold'
+  }}>
+    <div style={{
+      border: '6px solid #f3f3f3',
+      borderTop: '6px solid #3498db',
+      borderRadius: '50%',
+      width: '60px',
+      height: '60px',
+      animation: 'spin 1s linear infinite',
+      marginBottom: '20px'
+    }} />
+    Processing...
+  </div>
+)}
       {showStrengthModal && (
   <div style={{
     position: 'fixed',

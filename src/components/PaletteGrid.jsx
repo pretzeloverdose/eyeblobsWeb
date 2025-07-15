@@ -28,6 +28,7 @@ export default function PaletteGrid({ onAction, workingPalette, setWorkingPalett
             float: 'left',
             gap: "18px",
             padding: "16px",
+            paddingTop: "0px"
         }}>
             {workingPalette.map(([h, s, l], index) => (
                 <div

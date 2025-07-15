@@ -52,7 +52,7 @@ export default function PaletteSelector({ onPrimaryPaletteAction }) {
 
   return (
     <div>
-      <div className="mb-4" style={{ margin: '20px', clear: 'both', display: 'block' }}>
+      <div style={{ margin: '20px', marginTop: '3px', marginBottom: '3px', clear: 'both', display: 'block' }}>
         <label htmlFor="palette-select" className="block text-sm font-medium text-gray-700">
           Select Palette:
         </label>
@@ -60,7 +60,7 @@ export default function PaletteSelector({ onPrimaryPaletteAction }) {
           id="palette-select"
           value={selectedPalette}
           onChange={handleChange}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          style={{ marginTop: '2px !important' }}
         >
           {Object.keys(paletteMap).map((key) => (
             <option key={key} value={key}>
