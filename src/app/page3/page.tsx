@@ -587,7 +587,7 @@ const ApplyColorFilter = async (strength: number = 30) => {
             }} className='swatchDiv'>
               <p>Tap image above to get pixel colour</p>
               <div style={{
-                width: '220px',
+                width: '150px',
                 height: '100px',
                 background: pixelColor,
                 clear: 'both',
