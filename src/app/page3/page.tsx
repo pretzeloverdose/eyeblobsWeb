@@ -629,7 +629,7 @@ const ApplyColorFilter = async (strength: number = 30) => {
           </div>
           </div>
           
-          <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', marginBottom: '200px' }}>
             <PaletteSelector onPrimaryPaletteAction={handlePaletteAction} />
           </div>
     </div>
