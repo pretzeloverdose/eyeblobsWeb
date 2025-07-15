@@ -28,8 +28,8 @@ const nextConfig = {
   
   // Optional: Configure base path if your site is hosted in a subdirectory
   // Only add basePath if the environment variable exists
-  ...(process.env.NEXT_PUBLIC_BASE_PATH && {
-    basePath: process.env.NEXT_PUBLIC_BASE_PATH
+  ...(process.env.NODE_ENV === 'production' && {
+    basePath: '/eyeblobs/app'
   })
 };
 
