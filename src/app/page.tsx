@@ -43,6 +43,13 @@ export default function App() {
   const [scale, setScale] = useState(1)
   const [rotate, setRotate] = useState(0)
   const [aspect, setAspect] = useState<number | undefined>(undefined)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   function onSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files.length > 0) {
@@ -155,7 +162,7 @@ export default function App() {
               const base64data = reader.result as string;
               localStorage.setItem('savedImage', base64data);
               localStorage.setItem('savedImageOriginal', base64data);
-              alert('Image saved successfully! Go to lightbox tab below to use.');
+              alert('Image saved successfully! Navigate to the various pages below to use.');
               resolve(true);
             } catch (error) {
               console.error('LocalStorage error:', error);
@@ -190,10 +197,32 @@ function isLocalStorageAvailable() {
 
   return (
     <>
-    <div className="App">
+    <div className="App homePage">
       <div className="Crop-Controls" style={{justifyContent: 'center', marginTop: '50px', marginBottom: '50px'}}>
-      <p>Select an image to use for your reference on this site</p>
-        <input type="file" accept="image/*" onChange={onSelectFile} />
+      <h1>Welcome to the site!</h1>
+      <p>This site is designed to assist traditional artists with a reverse lightbox, grid reference system and colour matching and editing.</p>
+      <p>To begin, simply upload your reference image.</p>
+      <button 
+        onClick={handleButtonClick}
+        style={{
+          padding: '5px 10px',
+          backgroundColor: '#4285f4',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '13px'
+        }}
+      >
+        Upload Image
+      </button>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={onSelectFile}
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+      />
       </div>
       {!!imgSrc && (
         <div className="cropSection">
@@ -219,7 +248,16 @@ function isLocalStorageAvailable() {
       <>
       <div>
       <div className="Crop-Controls">
-        <button onClick={saveImage}>Save Image</button>
+        <button
+        style={{
+          padding: '5px 10px',
+          backgroundColor: '#4285f4',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '13px'
+        }} onClick={saveImage}>Save Image</button>
         </div>
             <canvas
               ref={previewCanvasRef}

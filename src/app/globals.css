@@ -68,3 +68,24 @@ a {
 .swatchDiv p {
   font-size: 12px !important;
 }
+
+.homePage {
+  margin: 30px;
+}
+.homePage h1 {
+  margin-bottom: 10px;
+}
+.homePage p {
+  margin-bottom: 10px;
+}
+
+@media screen and (max-width: 767px) {
+  .homePage h1 {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+ .homePage p {
+    font-size: 13px;
+    margin-bottom: 6px;
+  } 
+}
