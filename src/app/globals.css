@@ -65,8 +65,6 @@ a {
   cursor: pointer;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.swatchDiv p {
+  font-size: 12px !important;
 }

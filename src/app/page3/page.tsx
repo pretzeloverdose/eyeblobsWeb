@@ -584,7 +584,7 @@ const ApplyColorFilter = async (strength: number = 30) => {
               flexDirection: 'column',
               alignItems: 'center',
               gap: '1rem'
-            }}>
+            }} className='swatchDiv'>
               <p>Tap image above to get pixel colour</p>
               <div style={{
                 width: '220px',
@@ -603,9 +603,6 @@ const ApplyColorFilter = async (strength: number = 30) => {
               <p>Tap a swatch below to get palette colour</p>
             </div>
           )}
-          <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
-            <PaletteSelector onPrimaryPaletteAction={handlePaletteAction} />
-          </div>
           </div>
           <div style={{width: '40%', marginTop: '0.8rem'}}>
           <button 
@@ -630,6 +627,10 @@ const ApplyColorFilter = async (strength: number = 30) => {
             Revert to Original Image
           </button>
           </div>
+          </div>
+          
+          <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
+            <PaletteSelector onPrimaryPaletteAction={handlePaletteAction} />
           </div>
     </div>
   );
