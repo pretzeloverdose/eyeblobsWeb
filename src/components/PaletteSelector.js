@@ -1,33 +1,15 @@
 // components/PaletteSelector.js
 import { useState, useEffect } from 'react';
 
-// Import your palette components
-import PrimaryPaletteGrid from './PrimaryPaletteGrid';
-import ZornPaletteGrid from './ZornPaletteGrid';
-import MonetPalleteGrid from './MonetPaletteGrid';
 import PaletteGrid from './PaletteGrid';
-import primaryPalette from '../palettes/primaryPalette';
-import zornPalette from '@/palettes/zornPalette';
-import monetPalette from '@/palettes/monetPalette';
+import palettes from '@/palettes';
 import { extractImageColors } from '../services/imageColorService';
 
-const paletteGridMap = {
-  primary: PrimaryPaletteGrid,
-  zorn: ZornPaletteGrid,
-  monet: MonetPalleteGrid
-  // Add more palette components here as needed
-};
-
-const paletteMap = {
-                primary: primaryPalette,
-                zorn: zornPalette,
-                monet: monetPalette,
-                Image: null
-            };
+const paletteMap = palettes;
 
 export default function PaletteSelector({ onPrimaryPaletteAction }) {
   const [selectedPalette, setSelectedPalette] = useState('');
-  const [workingPalette, setWorkingPalette] = useState(primaryPalette);
+  const [workingPalette, setWorkingPalette] = useState(paletteMap['primary']);
   
   // Load image colors on initial render
     useEffect(() => {
@@ -63,6 +45,7 @@ export default function PaletteSelector({ onPrimaryPaletteAction }) {
                 setWorkingPalette(imageColors);
             }
         } else {
+            console.log(selectedValue);
             setWorkingPalette(paletteMap[selectedValue] || primaryPalette);
         }
     };
@@ -79,8 +62,7 @@ export default function PaletteSelector({ onPrimaryPaletteAction }) {
           onChange={handleChange}
           className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
         >
-          <option key="Image" value="Image">Image</option>
-          {Object.keys(paletteGridMap).map((key) => (
+          {Object.keys(paletteMap).map((key) => (
             <option key={key} value={key}>
               {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
             </option>

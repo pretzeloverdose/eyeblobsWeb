@@ -1,16 +1,4 @@
-import { useState, useEffect } from "react";
-import { getQuantizedColorsFromBase64 } from '../functions/getTopColorsFromBase64';
-import primaryPalette from '../palettes/primaryPalette';
-import zornPalette from '../palettes/zornPalette';
-import monetPalette from '../palettes/monetPalette';
-
 export default function PaletteGrid({ onAction, workingPalette, setWorkingPalette }) {
-
-    const paletteMap = {
-        primary: primaryPalette,
-        zorn: zornPalette,
-        monet: monetPalette
-    };
 
     const hslToHex = (h, s, l) => {
         l /= 100;

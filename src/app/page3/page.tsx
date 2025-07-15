@@ -3,10 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
 import zornPalette from '@/palettes/zornPalette';
-import monetPalette from '@/palettes/monetPalette';
-import primaryPalette from '@/palettes/primaryPalette';
 import PaletteSelector from '../../components/PaletteSelector';
 import { extractImageColors } from '../../services/imageColorService';
+import palettes from '@/palettes';
 
 // Helper function to convert HEX to RGB
 function hexToRgb(hex: string) {
@@ -75,8 +74,14 @@ export default function Page3() {
     positionY: 0
   });
   const [showStrengthModal, setShowStrengthModal] = useState(false);
-  const [strengthValue, setStrengthValue] = useState(30); // Default value
-  const [paletteToUse, setPaletteToUse] = useState('primary');
+  const [strengthValue, setStrengthValue] = useState("30"); // Default value
+  const [paletteToUse, setPaletteToUse] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      console.log("this " + localStorage.getItem('selectedPalette'));
+      return localStorage.getItem('selectedPalette') || '';
+    }
+    return '';
+  });
   const [paletteData, setPaletteData] = useState(null);
 
   const handlePaletteAction = (data: any) => {
@@ -103,7 +108,6 @@ export default function Page3() {
     const savedImage = localStorage.getItem('savedImage');
     const originalImage = localStorage.getItem('savedImageOriginal');
     const storedPixelColor = localStorage.getItem('pixelColor');
-    console.log("foo");
     if (storedPixelColor) {
       console.log("bar");
       setPixelColor(storedPixelColor);
@@ -330,64 +334,47 @@ function findWeightedMidpointHsl(
   hslArray: number[][], 
   strength: number
 ): number[] {
-  // Validate strength is between 1-100
   strength = Math.max(1, Math.min(100, strength));
-  
-  const targetH = targetHsl[0];
-  
-  // Find the closest hue
+  const weight = strength / 100;
+
   let closestItem = null;
   let smallestDiff = Infinity;
-  
-  hslArray.forEach(item => {
-    // Calculate hue difference (with wrap-around at 360)
-    const hDiff = Math.abs(item[0] - targetHsl[0]);
-    const hueDiff = Math.min(hDiff, 360 - hDiff);
-    
-    // Calculate saturation and lightness differences (normalized to 0-1 range)
+
+  for (const item of hslArray) {
+    const hueDiff = Math.min(
+      Math.abs(item[0] - targetHsl[0]),
+      360 - Math.abs(item[0] - targetHsl[0])
+    );
     const satDiff = Math.abs(item[1] - targetHsl[1]);
     const lightDiff = Math.abs(item[2] - targetHsl[2]);
-    
-    // Combine the differences (you can weight them differently if needed)
-    // Here we're using a simple Euclidean distance
+
     const overallDiff = Math.sqrt(
-      Math.pow(hueDiff / 360, 2) +  // Normalize hue to 0-1
-      Math.pow(satDiff, 2) + 
-      Math.pow(lightDiff, 2)
+      Math.pow(hueDiff / 360, 2) + 
+      Math.pow(satDiff / 100, 2) + 
+      Math.pow(lightDiff / 100, 2)
     );
-    
+
     if (overallDiff < smallestDiff) {
       smallestDiff = overallDiff;
       closestItem = item;
     }
-  });
+  }
 
   if (!closestItem) return targetHsl;
 
-  // Calculate weighted hue
-  const closestH = closestItem[0];
-  let weightedH;
-  
-  // Normalize strength to 0-1 range (where 0.5 = 50)
-  const weight = strength / 100;
-  
-  // Calculate the shortest path around the color wheel
-  const diff = Math.abs(targetH - closestH);
-  if (diff > 180) {
-    // Need to wrap around the color wheel
-    if (targetH > closestH) {
-      weightedH = (targetH + (closestH + 360 - targetH) * weight) % 360;
-    } else {
-      weightedH = (targetH + (closestH - (targetH + 360)) * weight) % 360;
-    }
-  } else {
-    // Normal weighted average
-    weightedH = targetH + (closestH - targetH) * weight;
-  }
+  const [h1, s1, l1] = targetHsl;
+  const [h2, s2, l2] = closestItem;
 
-  // Calculate weighted saturation and lightness
-  const weightedS = targetHsl[1] + (closestItem[1] - targetHsl[1]) * weight/2;
-  const weightedL = targetHsl[2] + (closestItem[2] - targetHsl[2]) * weight/2;
+  // Hue interpolation with wrap-around
+  let deltaH = h2 - h1;
+  if (Math.abs(deltaH) > 180) {
+    deltaH -= Math.sign(deltaH) * 360;
+  }
+  let weightedH = (h1 + deltaH * weight + 360) % 360;
+
+  // Linear interpolation for S and L
+  const weightedS = s1 + (s2 - s1) * weight;
+  const weightedL = l1 + (l2 - l1) * weight;
 
   return [
     Math.round(weightedH),
@@ -398,34 +385,33 @@ function findWeightedMidpointHsl(
 
 
 const applyPalette = () => {
-  setPaletteToUse(localStorage.getItem('selectedPalette')?.toString() || '');
+  console.log("sdf to use: " + paletteToUse);
   setShowStrengthModal(true);
 };
 
 const applyZornFilterWithStrength = () => {
   setShowStrengthModal(false);
-  ApplyColorFilter(strengthValue);
+  ApplyColorFilter(parseInt(strengthValue));
 };
 
 // Modify the existing ApplyColorFilter to accept strength parameter
 const ApplyColorFilter = async (strength: number = 30) => {
   if (!imageSrc) return;
 
+  const paletteToUseLocal = localStorage.getItem('selectedPalette') || 'Zorn';
+
   // Define your palettes (assuming these are defined elsewhere in your code)
-  const palettes: Record<string, any> = {
-    zorn: zornPalette,
-    monet: monetPalette,
-    primary: primaryPalette
-    // Add other palettes here
-  };
+  const palettesVar: Record<string, any> = palettes;
 
   let selectedPalette: any;
 
   if (paletteToUse == "Image" ) {
-    selectedPalette = await await extractImageColors();
+    selectedPalette = await extractImageColors();
   } else {
     // Get the selected palette based on paletteToUse
-    selectedPalette = palettes[paletteToUse] || zornPalette; // fallback to zornPalette if not found
+    console.log("a " + paletteToUseLocal);
+    console.log("b " + palettesVar[paletteToUseLocal]);
+    selectedPalette = palettesVar[paletteToUseLocal] || zornPalette; // fallback to zornPalette if not found
   }
   const image = new Image();
   image.src = imageSrc;
@@ -484,18 +470,29 @@ const ApplyColorFilter = async (strength: number = 30) => {
       <h3>Set Filter Strength</h3>
       <p>Enter a value between 1 and 100:</p>
       <input
-        type="number"
-        min="1"
-        max="100"
-        value={strengthValue}
-        onChange={(e) => setStrengthValue(Math.min(100, Math.max(1, parseInt(e.target.value) || 30)))}
-        style={{
-          width: '100%',
-          padding: '8px',
-          margin: '10px 0',
-          fontSize: '16px'
-        }}
-      />
+  type="number"
+  min="1"
+  max="100"
+  value={strengthValue}
+  onChange={(e) => {
+    setStrengthValue(e.target.value); // Keep raw input
+  }}
+  onBlur={() => {
+    // Validate on blur
+    const parsed = parseInt(strengthValue);
+    if (isNaN(parsed)) {
+      setStrengthValue("30"); // Fallback
+    } else {
+      setStrengthValue(Math.min(100, Math.max(1, parsed)).toString());
+    }
+  }}
+  style={{
+    width: '100%',
+    padding: '8px',
+    margin: '10px 0',
+    fontSize: '16px'
+  }}
+/>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
         <button 
           onClick={() => setShowStrengthModal(false)}
@@ -605,6 +602,7 @@ const ApplyColorFilter = async (strength: number = 30) => {
           )}
           </div>
           <div style={{width: '40%', marginTop: '0.8rem'}}>
+          
           <button 
             onClick={invertImageColors}
             className="editButton"
