@@ -34,8 +34,10 @@ function centerAspectCrop(
 
 export default function App() {
   const [imgSrc, setImgSrc] = useState('')
+  const [originalImgSrc, setOriginalImgSrc] = useState('')
   const previewCanvasRef = useRef<HTMLCanvasElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
+  const originalImgRef = useRef<HTMLImageElement>(null)
   const [crop, setCrop] = useState<Crop>()
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
   const [scale, setScale] = useState(1)
@@ -46,8 +48,10 @@ export default function App() {
     if (e.target.files && e.target.files.length > 0) {
       setCrop(undefined) // Makes crop preview update between images.
       const reader = new FileReader()
-      reader.addEventListener('load', () =>
-        setImgSrc(reader.result?.toString() || ''),
+      reader.addEventListener('load', () => {
+          setImgSrc(reader.result?.toString() || ''),
+          setOriginalImgSrc(reader.result?.toString() || '')
+        }
       )
       reader.readAsDataURL(e.target.files[0])
     }
@@ -150,6 +154,7 @@ export default function App() {
             try {
               const base64data = reader.result as string;
               localStorage.setItem('savedImage', base64data);
+              localStorage.setItem('savedImageOriginal', base64data);
               alert('Image saved successfully! Go to lightbox tab below to use.');
               resolve(true);
             } catch (error) {

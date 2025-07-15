@@ -2,6 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
+import zornPalette from '@/palettes/zornPalette';
+import monetPalette from '@/palettes/monetPalette';
+import primaryPalette from '@/palettes/primaryPalette';
+import PaletteSelector from '../../components/PaletteSelector';
+import { extractImageColors } from '../../services/imageColorService';
+
 // Helper function to convert HEX to RGB
 function hexToRgb(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -58,8 +64,9 @@ function hexToCmyk(hex: string): string {
 
 export default function Page3() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [originalImageSrc, setOriginalImageSrc] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const [pixelColor, setPixelColor] = useState<string | null>('#dddddd');
+  const [pixelColor, setPixelColor] = useState('#dddddd');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
   const [transformState, setTransformState] = useState({
@@ -67,6 +74,18 @@ export default function Page3() {
     positionX: 0,
     positionY: 0
   });
+  const [showStrengthModal, setShowStrengthModal] = useState(false);
+  const [strengthValue, setStrengthValue] = useState(30); // Default value
+  const [paletteToUse, setPaletteToUse] = useState('primary');
+  const [paletteData, setPaletteData] = useState(null);
+
+  const handlePaletteAction = (data: any) => {
+    console.log("Received from PrimaryPaletteGrid:", data);
+    setPaletteData(data);
+    setPixelColor(data.hex);
+    localStorage.setItem('pixelColor', data.hex);
+    // Do something with the data
+  };
 
   const handleTransformEnd = () => {
     if (!transformRef.current || !transformRef.current.state) return;
@@ -82,10 +101,26 @@ export default function Page3() {
   useEffect(() => {
     // Retrieve from localStorage on component mount
     const savedImage = localStorage.getItem('savedImage');
+    const originalImage = localStorage.getItem('savedImageOriginal');
+    const storedPixelColor = localStorage.getItem('pixelColor');
+    console.log("foo");
+    if (storedPixelColor) {
+      console.log("bar");
+      setPixelColor(storedPixelColor);
+    }
     if (savedImage) {
       setImageSrc(savedImage);
+      setOriginalImageSrc(originalImage);
     }
   }, []);
+
+  const revertToOriginal = () => {
+    if (originalImageSrc) {
+      setImageSrc(originalImageSrc);
+      localStorage.setItem('imageSrc', originalImageSrc);
+      localStorage.setItem('savedImage', originalImageSrc);
+    }
+  }
 
 const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
   const img = imgRef.current;
@@ -207,8 +242,288 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     };
   };
 
+  // RGB to HSL conversion function
+  const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0; // default initialization
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h *= 60;
+  }
+
+  return [Math.round(h), Math.round(s * 100), Math.round(l * 100)];
+};
+
+const hexToHslToString = (hex: string) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const hsl = rgbToHsl(r, g, b);
+
+  return "H:" + hsl[0] + " S:" + hsl[1] + " L:" + hsl[2];
+}
+
+const hslToRgb = (h: number, s: number, l: number): [number, number, number] => {
+  // Convert saturation and lightness from percentages to 0-1 range
+  s /= 100;
+  l /= 100;
+
+  // If saturation is 0, the color is achromatic (gray)
+  if (s === 0) {
+    const gray = Math.round(l * 255);
+    return [gray, gray, gray];
+  }
+
+  // Temporary variables for calculation
+  const temp1 = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const temp2 = 2 * l - temp1;
+
+  // Normalize hue to 0-1 range
+  const hue = h / 360;
+
+  // Calculate RGB components
+  const rgb = [0, 0, 0];
+  for (let i = 0; i < 3; i++) {
+    let tempHue = hue + (1 / 3) * -(i - 1);
+    if (tempHue < 0) tempHue += 1;
+    if (tempHue > 1) tempHue -= 1;
+
+    let tempColor;
+    if (6 * tempHue < 1) {
+      tempColor = temp2 + (temp1 - temp2) * 6 * tempHue;
+    } else if (2 * tempHue < 1) {
+      tempColor = temp1;
+    } else if (3 * tempHue < 2) {
+      tempColor = temp2 + (temp1 - temp2) * (2 / 3 - tempHue) * 6;
+    } else {
+      tempColor = temp2;
+    }
+
+    rgb[i] = Math.round(tempColor * 255);
+  }
+
+  return [rgb[0], rgb[1], rgb[2]];
+};
+
+function findWeightedMidpointHsl(
+  targetHsl: number[], 
+  hslArray: number[][], 
+  strength: number
+): number[] {
+  // Validate strength is between 1-100
+  strength = Math.max(1, Math.min(100, strength));
+  
+  const targetH = targetHsl[0];
+  
+  // Find the closest hue
+  let closestItem = null;
+  let smallestDiff = Infinity;
+  
+  hslArray.forEach(item => {
+    // Calculate hue difference (with wrap-around at 360)
+    const hDiff = Math.abs(item[0] - targetHsl[0]);
+    const hueDiff = Math.min(hDiff, 360 - hDiff);
+    
+    // Calculate saturation and lightness differences (normalized to 0-1 range)
+    const satDiff = Math.abs(item[1] - targetHsl[1]);
+    const lightDiff = Math.abs(item[2] - targetHsl[2]);
+    
+    // Combine the differences (you can weight them differently if needed)
+    // Here we're using a simple Euclidean distance
+    const overallDiff = Math.sqrt(
+      Math.pow(hueDiff / 360, 2) +  // Normalize hue to 0-1
+      Math.pow(satDiff, 2) + 
+      Math.pow(lightDiff, 2)
+    );
+    
+    if (overallDiff < smallestDiff) {
+      smallestDiff = overallDiff;
+      closestItem = item;
+    }
+  });
+
+  if (!closestItem) return targetHsl;
+
+  // Calculate weighted hue
+  const closestH = closestItem[0];
+  let weightedH;
+  
+  // Normalize strength to 0-1 range (where 0.5 = 50)
+  const weight = strength / 100;
+  
+  // Calculate the shortest path around the color wheel
+  const diff = Math.abs(targetH - closestH);
+  if (diff > 180) {
+    // Need to wrap around the color wheel
+    if (targetH > closestH) {
+      weightedH = (targetH + (closestH + 360 - targetH) * weight) % 360;
+    } else {
+      weightedH = (targetH + (closestH - (targetH + 360)) * weight) % 360;
+    }
+  } else {
+    // Normal weighted average
+    weightedH = targetH + (closestH - targetH) * weight;
+  }
+
+  // Calculate weighted saturation and lightness
+  const weightedS = targetHsl[1] + (closestItem[1] - targetHsl[1]) * weight/2;
+  const weightedL = targetHsl[2] + (closestItem[2] - targetHsl[2]) * weight/2;
+
+  return [
+    Math.round(weightedH),
+    Math.round(weightedS),
+    Math.round(weightedL)
+  ];
+}
+
+
+const applyPalette = () => {
+  setPaletteToUse(localStorage.getItem('selectedPalette')?.toString() || '');
+  setShowStrengthModal(true);
+};
+
+const applyZornFilterWithStrength = () => {
+  setShowStrengthModal(false);
+  ApplyColorFilter(strengthValue);
+};
+
+// Modify the existing ApplyColorFilter to accept strength parameter
+const ApplyColorFilter = async (strength: number = 30) => {
+  if (!imageSrc) return;
+
+  // Define your palettes (assuming these are defined elsewhere in your code)
+  const palettes: Record<string, any> = {
+    zorn: zornPalette,
+    monet: monetPalette,
+    primary: primaryPalette
+    // Add other palettes here
+  };
+
+  let selectedPalette: any;
+
+  if (paletteToUse == "Image" ) {
+    selectedPalette = await await extractImageColors();
+  } else {
+    // Get the selected palette based on paletteToUse
+    selectedPalette = palettes[paletteToUse] || zornPalette; // fallback to zornPalette if not found
+  }
+  const image = new Image();
+  image.src = imageSrc;
+
+  image.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(image, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      let hslValueOriginal = rgbToHsl(data[i], data[i + 1], data[i + 2]);
+      let newPixel: any;
+      newPixel = findWeightedMidpointHsl(hslValueOriginal, selectedPalette, strength);
+      let newRGB = hslToRgb(newPixel[0], newPixel[1], newPixel[2]);
+      data[i] = newRGB[0];
+      data[i + 1] = newRGB[1];
+      data[i + 2] = newRGB[2];
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    const filteredImageUrl = canvas.toDataURL('image/png');
+    setImageSrc(filteredImageUrl);
+    localStorage.setItem('savedImage', filteredImageUrl);
+  };
+}
+
   return (
     <div>
+      {showStrengthModal && (
+  <div style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000
+  }}>
+    <div style={{
+      backgroundColor: 'white',
+      padding: '2rem',
+      borderRadius: '8px',
+      maxWidth: '400px',
+      width: '100%'
+    }}>
+      <h3>Set Filter Strength</h3>
+      <p>Enter a value between 1 and 100:</p>
+      <input
+        type="number"
+        min="1"
+        max="100"
+        value={strengthValue}
+        onChange={(e) => setStrengthValue(Math.min(100, Math.max(1, parseInt(e.target.value) || 30)))}
+        style={{
+          width: '100%',
+          padding: '8px',
+          margin: '10px 0',
+          fontSize: '16px'
+        }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+        <button 
+          onClick={() => setShowStrengthModal(false)}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#f0f0f0',
+            border: 'none',
+            borderRadius: '4px'
+          }}
+        >
+          Cancel
+        </button>
+        <button 
+          onClick={applyZornFilterWithStrength}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#0070f3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px'
+          }}
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         <div className="editImageWrap">
           <canvas ref={canvasRef} style={{ display: 'none' }} />
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -270,10 +585,10 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
               alignItems: 'center',
               gap: '1rem'
             }}>
-                <p>Tap image above to get pixel colour</p>
+              <p>Tap image above to get pixel colour</p>
               <div style={{
-                width: '120px',
-                height: '150px',
+                width: '220px',
+                height: '100px',
                 background: pixelColor,
                 clear: 'both',
                 display: 'block',
@@ -283,9 +598,14 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
                 <p>HEX: {pixelColor}</p>
                 <p>RGB: {hexToRgb(pixelColor)}</p>
                 <p>CMYK: {hexToCmyk(pixelColor)}</p>
+                <p>HSL: { hexToHslToString(pixelColor) }</p>
               </div>
+              <p>Tap a swatch below to get palette colour</p>
             </div>
           )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
+            <PaletteSelector onPrimaryPaletteAction={handlePaletteAction} />
+          </div>
           </div>
           <div style={{width: '40%', marginTop: '0.8rem'}}>
           <button 
@@ -299,6 +619,15 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
           </button>
           <button onClick={flipImageVertically} className="editButton">
             Flip Vertically
+          </button>
+          <button onClick={applyPalette} className='editButton'>
+            Apply Palette to Image
+          </button>
+          {/* <button className='editButton'>
+            Undo
+          </button> */}
+          <button onClick={revertToOriginal} className='editButton'>
+            Revert to Original Image
           </button>
           </div>
           </div>

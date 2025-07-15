@@ -14,7 +14,7 @@ export default function CameraFeed() {
     setTransformState,
     opacity,
     setOpacity
-  } = usePersistentTransform();
+  } = usePersistentTransform('camera');
 
   // Initialize transform with saved state
   useEffect(() => {

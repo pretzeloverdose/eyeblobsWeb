@@ -4,14 +4,17 @@ import React, { createContext, useContext, useState } from "react";
 type ImageContextType = {
   image: string | null;
   setImage: (img: string | null) => void;
+  originalImage: string | null;
+  setOriginalImage: (img: string | null) => void;
 };
 
 const ImageContext = createContext<ImageContextType | undefined>(undefined);
 
 export function ImageProvider({ children }: { children: React.ReactNode }) {
   const [image, setImage] = useState<string | null>(null);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
   return (
-    <ImageContext.Provider value={{ image, setImage }}>
+    <ImageContext.Provider value={{ image, setImage, originalImage, setOriginalImage }}>
       {children}
     </ImageContext.Provider>
   );
