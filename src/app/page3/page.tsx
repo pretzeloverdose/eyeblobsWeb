@@ -602,7 +602,6 @@ export default function Page3() {
             initialPositionY={transformState.positionY}
             onPanningStop={handleTransformEnd}
             onPinchingStop={handleTransformEnd}
-            onZoomStop={handleTransformEnd}
             minScale={0.1}
             limitToBounds={true}          
             maxPositionX={calculateBounds().maxPositionX}
