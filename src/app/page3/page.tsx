@@ -84,7 +84,7 @@ export default function Page3() {
   });
   const [paletteData, setPaletteData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
 
   const handlePaletteAction = (data: any) => {
@@ -107,14 +107,14 @@ export default function Page3() {
   };
 
   useEffect(() => {
-    // Retrieve from localStorage on component mount
     const savedImage = localStorage.getItem('savedImage');
     const originalImage = localStorage.getItem('savedImageOriginal');
     const storedPixelColor = localStorage.getItem('pixelColor');
+    
     if (storedPixelColor) {
-      console.log("bar");
       setPixelColor(storedPixelColor);
     }
+
     if (savedImage) {
       const img = new Image();
       img.onload = () => {
@@ -122,11 +122,73 @@ export default function Page3() {
         setOriginalImageSrc(originalImage);
         setIsImageLoading(false);
       };
+      img.onerror = () => {
+        setIsImageLoading(false); // Image failed to load
+      };
       img.src = savedImage;
     } else {
-      setIsImageLoading(false);
+      setIsImageLoading(false); // No image to load
     }
   }, []);
+
+  // Update the image rendering part to handle loading states properly
+  const renderImageContent = () => {
+    if (isImageLoading) {
+      return (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '300px',
+          width: '100%'
+        }}>
+          <div style={{
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #3498db',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            animation: 'spin 1s linear infinite'
+          }} />
+        </div>
+      );
+    }
+
+    if (!imageSrc) {
+      return <p>No image found. Please upload an image first.</p>;
+    }
+
+    return (
+      <>
+        <img
+          src={imageSrc}
+          alt="Saved Crop"
+          ref={(img) => {
+            if (img) {
+              img.onload = () => setIsImageLoading(false);
+              img.onerror = () => setIsImageLoading(false);
+              imgRef.current = img;
+            }
+          }}
+          style={{ display: 'block', width: '100%' }}
+          onLoad={() => setIsImageLoading(false)}
+          onError={() => setIsImageLoading(false)}
+        />
+        <div
+          onClick={handleOverlayClick}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            cursor: 'crosshair',
+            zIndex: 10
+          }}
+        />
+      </>
+    );
+  };
 
   const revertToOriginal = () => {
     if (originalImageSrc) {
@@ -626,49 +688,7 @@ export default function Page3() {
             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
               <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
                 <div style={{ position: 'relative' }}>
-                  {imageSrc && (
-                    <>
-                      <img
-                        src={imageSrc}
-                        alt="Saved Crop"
-                        ref={(img) => {
-                          imgRef.current = img;
-                        }}
-                        style={{ display: 'block', width: '100%' }}
-                      />
-                      <div
-                        onClick={handleOverlayClick}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          cursor: 'crosshair',
-                          zIndex: 10
-                        }}
-                      />
-                    </>
-                  )}
-                 {!imageSrc && !isImageLoading && <p>No image found. Please upload an image first.</p>}
-                 {isImageLoading && (
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: '300px',
-                      width: '100%'
-                    }}>
-                      <div style={{
-                        border: '4px solid #f3f3f3',
-                        borderTop: '4px solid #3498db',
-                        borderRadius: '50%',
-                        width: '40px',
-                        height: '40px',
-                        animation: 'spin 1s linear infinite'
-                      }} />
-                    </div>
-                  )}
+                  {renderImageContent()}
                 </div>
               </TransformComponent>
             )}
