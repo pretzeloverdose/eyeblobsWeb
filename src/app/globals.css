@@ -58,7 +58,7 @@ a {
   margin-top: 0.2rem;
   padding: 0.5rem 1rem;
   width: 100%;
-  background: #0070f3;
+  background: #0071bd;
   color: white;
   border: none;
   border-radius: 4px;
@@ -67,6 +67,7 @@ a {
 
 .swatchDiv p {
   font-size: 11px !important;
+  margin: 0px !important;
 }
 
 .homePage {
@@ -90,5 +91,8 @@ a {
   } 
   .editButton {
     font-size: 11px;
+  }
+  .swatchDiv p {
+    margin: 0px !important;
   }
 }

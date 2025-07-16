@@ -206,7 +206,7 @@ function isLocalStorageAvailable() {
         onClick={handleButtonClick}
         style={{
           padding: '5px 10px',
-          backgroundColor: '#4285f4',
+          backgroundColor: '#0071bd',
           color: 'white',
           border: 'none',
           borderRadius: '5px',
@@ -251,7 +251,7 @@ function isLocalStorageAvailable() {
         <button
         style={{
           padding: '5px 10px',
-          backgroundColor: '#4285f4',
+          backgroundColor: '#0071bd',
           color: 'white',
           border: 'none',
           borderRadius: '5px',

@@ -737,7 +737,7 @@ export default function Page3() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '1rem'
+              gap: '0.5rem'
             }} className='swatchDiv'>
               <p>Tap image above to get pixel colour</p>
               <div style={{
