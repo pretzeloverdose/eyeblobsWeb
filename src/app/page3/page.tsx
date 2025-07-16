@@ -84,6 +84,7 @@ export default function Page3() {
   });
   const [paletteData, setPaletteData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
 
 
   const handlePaletteAction = (data: any) => {
@@ -115,16 +116,29 @@ export default function Page3() {
       setPixelColor(storedPixelColor);
     }
     if (savedImage) {
-      setImageSrc(savedImage);
-      setOriginalImageSrc(originalImage);
+      const img = new Image();
+      img.onload = () => {
+        setImageSrc(savedImage);
+        setOriginalImageSrc(originalImage);
+        setIsImageLoading(false);
+      };
+      img.src = savedImage;
+    } else {
+      setIsImageLoading(false);
     }
   }, []);
 
   const revertToOriginal = () => {
     if (originalImageSrc) {
-      setImageSrc(originalImageSrc);
-      localStorage.setItem('imageSrc', originalImageSrc);
-      localStorage.setItem('savedImage', originalImageSrc);
+      setIsImageLoading(true);
+      const img = new Image();
+      img.onload = () => {
+        setImageSrc(originalImageSrc);
+        localStorage.setItem('imageSrc', originalImageSrc);
+        localStorage.setItem('savedImage', originalImageSrc);
+        setIsImageLoading(false);
+      };
+      img.src = originalImageSrc;
     }
   }
 
@@ -636,7 +650,25 @@ export default function Page3() {
                       />
                     </>
                   )}
-                  {!imageSrc && <p>No image found. Please upload an image first.</p>}
+                 {!imageSrc && !isImageLoading && <p>No image found. Please upload an image first.</p>}
+                 {isImageLoading && (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: '300px',
+                      width: '100%'
+                    }}>
+                      <div style={{
+                        border: '4px solid #f3f3f3',
+                        borderTop: '4px solid #3498db',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        animation: 'spin 1s linear infinite'
+                      }} />
+                    </div>
+                  )}
                 </div>
               </TransformComponent>
             )}
