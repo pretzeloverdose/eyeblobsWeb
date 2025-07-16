@@ -74,7 +74,7 @@ export default function Page3() {
     positionY: 0
   });
   const [showStrengthModal, setShowStrengthModal] = useState(false);
-  const [strengthValue, setStrengthValue] = useState("30"); // Default value
+  const [strengthValue, setStrengthValue] = useState("50"); // Default value
   const [paletteToUse, setPaletteToUse] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       console.log("this " + localStorage.getItem('selectedPalette'));
@@ -615,8 +615,38 @@ export default function Page3() {
             width: '100%'
           }}>
             <h3>Set Filter Strength</h3>
-            <p>Enter a value between 1 and 100:</p>
+            <p>Choose a value between 1 and 100:</p>
+            <div
+              style={{
+                width: '100%',
+                padding: '8px',
+                margin: '10px 0',
+                fontSize: '16px'
+              }}
+            >
             <input
+              type="range"
+              min="1"
+              max="100"
+              step="1"
+              title='setStrength'
+              placeholder=''
+              value={strengthValue}
+              onChange={(e) => setStrengthValue(e.target.value)}
+              onBlur={() => {
+                const parsed = parseInt(strengthValue);
+                if (isNaN(parsed)) {
+                  setStrengthValue("50"); // Fallback
+                } else {
+                  setStrengthValue(Math.min(100, Math.max(1, parsed)).toString());
+                }
+              }}
+              style={{
+                width: '100%'
+              }}
+            /><div style={{ textAlign: 'center'}}>{strengthValue}</div>
+            </div>
+            {/* <input
               type="number"
               min="1"
               max="100"
@@ -639,7 +669,7 @@ export default function Page3() {
                 margin: '10px 0',
                 fontSize: '16px'
               }}
-            />
+            /> */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 onClick={() => setShowStrengthModal(false)}

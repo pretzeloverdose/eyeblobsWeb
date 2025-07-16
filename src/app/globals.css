@@ -66,7 +66,7 @@ a {
 }
 
 .swatchDiv p {
-  font-size: 12px !important;
+  font-size: 11px !important;
 }
 
 .homePage {
@@ -88,4 +88,7 @@ a {
     font-size: 13px;
     margin-bottom: 6px;
   } 
+  .editButton {
+    font-size: 11px;
+  }
 }

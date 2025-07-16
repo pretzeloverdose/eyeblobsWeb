@@ -53,14 +53,14 @@ export default function PaletteSelector({ onPrimaryPaletteAction }) {
   return (
     <div>
       <div style={{ margin: '20px', marginTop: '3px', marginBottom: '3px', clear: 'both', display: 'block' }}>
-        <label htmlFor="palette-select" className="block text-sm font-medium text-gray-700">
-          Select Palette:
+        <label style={{ fontSize: '12px' }} htmlFor="palette-select" className="block text-sm font-medium text-gray-700">
+          Select Palette: 
         </label>
         <select
           id="palette-select"
           value={selectedPalette}
           onChange={handleChange}
-          style={{ marginTop: '2px !important' }}
+          style={{ marginTop: '2px !important', marginLeft: '6px', fontSize: '12px' }}
         >
           {Object.keys(paletteMap).map((key) => (
             <option key={key} value={key}>
