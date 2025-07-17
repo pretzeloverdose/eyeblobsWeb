@@ -361,7 +361,7 @@ export default function Page4() {
                                             </div>
                                         </>
                                     )}
-                                    {!imageSrc && <p>No image found. Please upload an image first.</p>}
+                                    {!imageSrc && <p style={{ marginTop: '15px' }}>No image found. Please upload an image first.</p>}
                                 </div>
                             </TransformComponent>
                         )}

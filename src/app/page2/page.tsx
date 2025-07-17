@@ -122,7 +122,7 @@ export default function CameraFeed() {
                   justifyContent: "center",
                   backgroundColor: "#f0f0f0"
                 }}>
-                  {!imageSrc && <p>No image found. Please upload an image first.</p> }
+                  {!imageSrc && <p style={{ marginTop: '15px' }}>No image found. Please upload an image first.</p> }
                 </div>
               )}
             </TransformComponent>

@@ -155,7 +155,7 @@ export default function Page3() {
     }
 
     if (!imageSrc) {
-      return <p>No image found. Please upload an image first.</p>;
+      return <p style={{ marginTop: '15px' }}>No image found. Please upload an image first.</p>;
     }
 
     return (
