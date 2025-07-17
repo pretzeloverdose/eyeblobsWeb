@@ -25,10 +25,7 @@ export function TipsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsModalOpen(false);
   }, [pathname]);
-
-  const isProd = process.env.NODE_ENV === 'production';
-  const { publicRuntimeConfig } = getConfig();
-  const basePath = isProd ?  publicRuntimeConfig.basePath : '';
+  const basePath = getConfig()?.basePath || '';
 
 
   const tipsContentMap: Record<string, TipsContent> = {
