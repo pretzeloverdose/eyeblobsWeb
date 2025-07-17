@@ -25,7 +25,7 @@ export function TipsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsModalOpen(false);
   }, [pathname]);
-  const basePath = getConfig()?.basePath || '';
+  const basePathImp = getConfig()?.basePath || '';
 
 
   const tipsContentMap: Record<string, TipsContent> = {
@@ -36,7 +36,7 @@ export function TipsProvider({ children }: { children: React.ReactNode }) {
     '/page2/': {
       title: '<h1>Lightbox Tips</h1>',
       content: `<ol>
-        <li>For best results without distortion, position your device parallel to the surface you are working on <img src="${basePath}/images/lightboxGraphic.png" style="margin: 3px; display: block;" height="170" width="250" /></li>
+        <li>For best results without distortion, position your device parallel to the surface you are working on <img src="${basePathImp}/images/lightboxGraphic.png" style="margin: 3px; display: block;" height="170" width="250" /></li>
         <li>To use the lighbox while working on the surface, a <a href="https://www.google.com/search?q=gooseneck+device+holder" target="_blank" style="color: #0071bd" rel="noopener noreferrer">gooseneck device holder</a> is highly recommended to keep your device steady and in the right position</li>
       </ol>`,
     },
