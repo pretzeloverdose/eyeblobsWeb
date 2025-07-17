@@ -11,8 +11,8 @@ export const usePersistentGrid = (keyPrefix: string = 'grid') => {
   });
 
   const [gridRows, setGridRows] = useState(() => {
-    if (typeof window === 'undefined') return '2';
-    return localStorage.getItem('gridRows') || '2';
+    if (typeof window === 'undefined') return '5';
+    return localStorage.getItem('gridRows') || '5';
   });
 
   const [gridCellWidth, setGridCellWidth] = useState(() => {
