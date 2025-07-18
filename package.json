@@ -12,6 +12,7 @@
   "dependencies": {
     "dompurify": "^3.2.6",
     "next": "15.3.4",
+    "opencv.js": "^1.2.1",
     "react": "^19.0.0",
     "react-color": "^2.19.3",
     "react-dom": "^19.0.0",

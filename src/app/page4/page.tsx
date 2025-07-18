@@ -345,7 +345,7 @@ export default function Page4() {
                                                             setVirtualRatio(imgRef.current.width / parseFloat(gridWidth));
                                                         }
                                                     }}
-                                                    style={{ display: 'block', width: '100%' }}
+                                                    style={{ display: 'block' }}
                                                 />
                                                 <div
                                                     style={{

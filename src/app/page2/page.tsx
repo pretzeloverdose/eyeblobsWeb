@@ -151,7 +151,7 @@ export default function CameraFeed() {
       </div>
 
       {/* Opacity slider controls */}
-      <div style={{ padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd" }}>
+      <div style={{ padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd", position: "absolute", height: 50, bottom: 0, zIndex: 300 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span>Opacity:</span>
           <input

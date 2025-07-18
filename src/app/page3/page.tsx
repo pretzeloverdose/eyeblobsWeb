@@ -170,7 +170,7 @@ export default function Page3() {
               imgRef.current = img;
             }
           }}
-          style={{ display: 'block', width: '100%' }}
+          style={{ display: 'block' }}
           onLoad={() => setIsImageLoading(false)}
           onError={() => setIsImageLoading(false)}
         />
