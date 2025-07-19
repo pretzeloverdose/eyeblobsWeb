@@ -1,4 +1,4 @@
-export default function PaletteGrid({ onAction, workingPalette, setWorkingPalette }) {
+export default function PaletteGrid({ onAction, workingPalette, setWorkingPalette, paletteType, removeColor }) {
 
     const hslToHex = (h, s, l) => {
         l /= 100;
@@ -21,6 +21,12 @@ export default function PaletteGrid({ onAction, workingPalette, setWorkingPalett
         });
     };
 
+    const deleteSwatch = (hIn, sIn, lIn) => {
+        const newPalette = workingPalette.filter(([h, s, l]) => h !== hIn || s !== sIn || l !== lIn);
+        setWorkingPalette(newPalette);
+        localStorage.setItem('customPaletteColors', newPalette);
+    }
+
     return (
         <div>
         <div style={{
@@ -30,10 +36,17 @@ export default function PaletteGrid({ onAction, workingPalette, setWorkingPalett
             padding: "16px",
             paddingTop: "0px"
         }}>
-            {workingPalette.map(([h, s, l], index) => (
-                <div
+            {workingPalette && (workingPalette.map(([h, s, l], index) => (
+                <div key={index+'w'} style={{position: 'relative', 
+            display: "inline-block",
+            float: 'left' }}>
+                    {paletteType == "customPaletteColors" && ( 
+                        <div key={index+'d'} style={{ position: 'absolute', right: 15, top: 0, height: 6, width: 6, zIndex: 300 }}>
+                            <button onClick={() => deleteSwatch(h, s, l)} style={{ padding: '0px 5px 0px 5px', borderRadius: 0 }}>x</button>
+                            </div>)}
+                    <div 
                     onClick={() => handleColorSelect(h, s, l)}
-                    key={index}
+                    key={index+'c'}
                     style={{
                         backgroundColor: `hsl(${h}, ${s}%, ${l}%)`,
                         width: "50px",
@@ -41,8 +54,9 @@ export default function PaletteGrid({ onAction, workingPalette, setWorkingPalett
                         border: "1px solid #ccc",
                         float: "left"
                     }}
-                />
-            ))}
+                ></div>
+                </div>
+            )))}
         </div>
         </div>
     );

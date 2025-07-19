@@ -13,7 +13,8 @@ const palettes  = {
     rembrandt: rembrandtPalette,
     modern: modernPalette,
     gray: grayPalette,
-    Image: null
+    Image: null,
+    customPaletteColors: null
 };
 
 export default palettes;

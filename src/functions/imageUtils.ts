@@ -1,3 +1,6 @@
+import { RGB } from "next-colors";
+import { RefObject } from "react";
+
 export function hexToCmyk(hex: string): string {
   // Remove "#" if present
   hex = hex.replace(/^#/, "");
@@ -47,6 +50,14 @@ export function hexToRgb(hex: string) {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgb(${r}, ${g}, ${b})`;
+}
+
+export function hexToRgbArray(hex: string): RGB {
+  return {
+    r: parseInt(hex.slice(1, 3), 16),
+    g: parseInt(hex.slice(3, 5), 16),
+    b: parseInt(hex.slice(5, 7), 16)
+  };
 }
 
 export const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => {
@@ -184,3 +195,24 @@ export const rgbToHsl = (r: number, g: number, b: number): [number, number, numb
       Math.round(weightedL)
     ];
   }
+
+  export const calculateBounds = (imgRefIn: RefObject<HTMLImageElement | null>, transformState: { scale: any; }) => {
+    if (!imgRefIn.current) return { minPositionX: 0, maxPositionX: 0, minPositionY: 0, maxPositionY: 0 };
+
+    const img = imgRefIn.current;
+    const wrapper = img.parentElement?.parentElement; // TransformComponent -> div wrapper
+    const wrapperWidth = wrapper?.clientWidth || 300;
+    const wrapperHeight = wrapper?.clientHeight || 300;
+    
+    const scale = transformState.scale;
+    const imgWidth = img.naturalWidth * scale;
+    const imgHeight = img.naturalHeight * scale;
+
+    // Calculate maximum allowed position to keep image visible
+    const maxPositionX = Math.max(0, (imgWidth - wrapperWidth) / 2);
+    const minPositionX = -maxPositionX;
+    const maxPositionY = Math.max(0, (imgHeight - wrapperHeight) / 2);
+    const minPositionY = -maxPositionY;
+
+    return { minPositionX, maxPositionX, minPositionY, maxPositionY };
+  };

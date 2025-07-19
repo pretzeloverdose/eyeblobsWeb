@@ -1,13 +1,14 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { RefObject, useEffect, useRef, useState } from 'react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
-import { findWeightedMidpointHsl, hexToCmyk, hexToHslToString, hexToRgb, hslToRgb, rgbToHsl } from '@/functions/imageUtils';
+import { calculateBounds, findWeightedMidpointHsl, hexToCmyk, hexToHslToString, hexToRgb, hexToRgbArray, hslToRgb, rgbToHsl } from '@/functions/imageUtils';
 
 import zornPalette from '@/palettes/zornPalette';
 import PaletteSelector from '../../components/PaletteSelector';
 import { extractImageColors } from '../../services/imageColorService';
 import palettes from '@/palettes';
+import { ColorPicker, HSL, RGB, rgbToHex } from 'next-colors';
 
 
 export default function Page3() {
@@ -34,6 +35,11 @@ export default function Page3() {
   const [paletteData, setPaletteData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [addSwatchVisible, setAddSwatchVisible] = useState(false);
+  type PaletteSelectorRef = {
+    addToPalette: () => void;
+  };
+  const paletteSelectorRef = useRef<PaletteSelectorRef>(null);
 
 
   const handlePaletteAction = (data: any) => {
@@ -273,11 +279,9 @@ export default function Page3() {
     };
   };
 
-
-  
-
-  
-
+  const addSwatch = () => {
+    setAddSwatchVisible(true);
+  }
 
   const applyPalette = () => {
     console.log("to use: " + paletteToUse);
@@ -300,31 +304,9 @@ export default function Page3() {
     );
   };
 
-  // Calculate boundaries based on image size and scale
-  const calculateBounds = () => {
-    if (!imgRef.current) return { minPositionX: 0, maxPositionX: 0, minPositionY: 0, maxPositionY: 0 };
-
-    const img = imgRef.current;
-    const wrapper = img.parentElement?.parentElement; // TransformComponent -> div wrapper
-    const wrapperWidth = wrapper?.clientWidth || 300;
-    const wrapperHeight = wrapper?.clientHeight || 300;
-    
-    const scale = transformState.scale;
-    const imgWidth = img.naturalWidth * scale;
-    const imgHeight = img.naturalHeight * scale;
-
-    // Calculate maximum allowed position to keep image visible
-    const maxPositionX = Math.max(0, (imgWidth - wrapperWidth) / 2);
-    const minPositionX = -maxPositionX;
-    const maxPositionY = Math.max(0, (imgHeight - wrapperHeight) / 2);
-    const minPositionY = -maxPositionY;
-
-    return { minPositionX, maxPositionX, minPositionY, maxPositionY };
-  };
-
   // Adjust position to keep image within bounds
   const getAdjustedPosition = (positionX: number, positionY: number, scale: any) => {
-    const bounds = calculateBounds();
+    const bounds = calculateBounds(imgRef, transformState);
     
     return {
       positionX: Math.min(Math.max(positionX, bounds.minPositionX), bounds.maxPositionX),
@@ -378,27 +360,59 @@ export default function Page3() {
     });
   };
 
+  const AddToCustomPalette = (pixelColor: string) => {
+    const color = hexToRgbArray(pixelColor);
+    const hsl = rgbToHsl(color.r, color.g, color.b);
+    const storedCustomPalette = localStorage.getItem('customPaletteColors');
+    const existingCustomPalette: [number, number, number] | [] = storedCustomPalette
+    ? (JSON.parse(storedCustomPalette) as [number, number, number])
+    : [];
+    console.log(existingCustomPalette);
+    const updated = [...existingCustomPalette, hsl];
+    localStorage.setItem('customPaletteColors', JSON.stringify(updated));
+    paletteSelectorRef.current?.addToPalette();
+    setAddSwatchVisible(false);
+  }
 
+  const SetPixelColorFromPicker= (color: RGB) => {
+    setPixelColor(rgbToHex(color));
+  }
 
   return (
     <div>
+      {addSwatchVisible && (
+        <div className='modalDiv'>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            width: '100%'
+          }}>
+            <ColorPicker
+              initialColor={ hexToRgbArray(pixelColor) }
+              onChange={(color) => SetPixelColorFromPicker(color)}
+              width={300}
+              height={200}
+            />
+            <button onClick={() => AddToCustomPalette(pixelColor)}>
+              Add to custom palette
+            </button>
+          <button
+                onClick={() => setAddSwatchVisible(false)}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#0070f3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px'
+                }}
+              >close</button>
+              </div>
+        </div>
+      )}
       {isProcessing && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999,
-          flexDirection: 'column',
-          color: 'white',
-          fontSize: '1.5rem',
-          fontWeight: 'bold'
-        }}>
+        <div className='modalDiv'>
           <div style={{
             border: '6px solid #f3f3f3',
             borderTop: '6px solid #3498db',
@@ -527,10 +541,10 @@ export default function Page3() {
             onPinchingStop={handleTransformEnd}
             minScale={0.1}
             limitToBounds={true}          
-            maxPositionX={calculateBounds().maxPositionX}
-            minPositionX={calculateBounds().minPositionX}
-            maxPositionY={calculateBounds().maxPositionY}
-            minPositionY={calculateBounds().minPositionY}
+            maxPositionX={calculateBounds(imgRef, transformState).maxPositionX}
+            minPositionX={calculateBounds(imgRef, transformState).minPositionX}
+            maxPositionY={calculateBounds(imgRef, transformState).maxPositionY}
+            minPositionY={calculateBounds(imgRef, transformState).minPositionY}
           >
             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
               <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
@@ -565,6 +579,7 @@ export default function Page3() {
                 display: 'block',
                 border: '1px solid #000'
               }} />
+              <button className='addSwatch' onClick={addSwatch}>+ Add swatch to custom palette</button>
               <div>
                 <p>HEX: {pixelColor}</p>
                 <p>RGB: {hexToRgb(pixelColor)}</p>
@@ -576,7 +591,6 @@ export default function Page3() {
           )}
         </div>
         <div style={{ width: '40%', marginTop: '0.8rem' }}>
-
           <button
             onClick={invertImageColors}
             className="editButton"
@@ -602,7 +616,7 @@ export default function Page3() {
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', marginBottom: '200px' }}>
-        <PaletteSelector onPrimaryPaletteAction={handlePaletteAction} />
+        <PaletteSelector ref={paletteSelectorRef} onPrimaryPaletteAction={handlePaletteAction} />
       </div>
     </div>
   );

@@ -103,6 +103,27 @@ button {
   margin-bottom: 10px;
 }
 
+.modalDiv {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  flex-direction: column;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.addSwatch {
+  font-size: 11px;
+}
+
 @media screen and (max-width: 767px) {
   .homePage h1 {
     font-size: 28px;
