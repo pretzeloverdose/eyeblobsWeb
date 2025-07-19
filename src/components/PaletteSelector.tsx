@@ -147,5 +147,5 @@ const paletteGrid = () => {
     </div>
   );
 })
-
+PaletteSelector.displayName = 'PaletteSelector';
 export default PaletteSelector;
