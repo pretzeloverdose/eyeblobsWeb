@@ -364,12 +364,17 @@ export default function Page3() {
     const color = hexToRgbArray(pixelColor);
     const hsl = rgbToHsl(color.r, color.g, color.b);
     const storedCustomPalette = localStorage.getItem('customPaletteColors');
-    const existingCustomPalette: [number, number, number] | [] = storedCustomPalette
-    ? (JSON.parse(storedCustomPalette) as [number, number, number])
-    : [];
-    console.log(existingCustomPalette);
-    const updated = [...existingCustomPalette, hsl];
-    localStorage.setItem('customPaletteColors', JSON.stringify(updated));
+    if (!storedCustomPalette) {
+      const updated = [hsl];
+      localStorage.setItem('customPaletteColors', JSON.stringify(updated));
+    } else {
+      const existingCustomPalette: [number, number, number] | [] = storedCustomPalette
+      ? (JSON.parse(storedCustomPalette) as [number, number, number])
+      : [];
+      console.log(existingCustomPalette);
+      const updated = [...existingCustomPalette, hsl];
+      localStorage.setItem('customPaletteColors', JSON.stringify(updated));
+    }
     paletteSelectorRef.current?.addToPalette();
     setAddSwatchVisible(false);
   }
