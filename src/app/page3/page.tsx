@@ -328,9 +328,25 @@ export default function Page3() {
       loadImage.src = imageSrc;
 
       loadImage.onload = async () => {
-        const selectedPalette = paletteToUseLocal === 'Image'
+        let selectedPalette = paletteToUseLocal === 'Image'
           ? await extractImageColors()
           : palettesVar[paletteToUseLocal] || zornPalette;
+
+        if (paletteToUseLocal == 'customPaletteColors') {
+          const storedPalette = localStorage.getItem('customPaletteColors');
+          if (storedPalette) {
+            try {
+              selectedPalette = JSON.parse(storedPalette);
+            } catch (error) {
+              console.error('Invalid customPaletteColors in localStorage', error);
+              selectedPalette = zornPalette; // fallback
+            }
+          } else {
+            selectedPalette = zornPalette; // fallback
+          }
+        }
+
+        console.log("p load " + palettesVar['monet']);
 
         const canvas = document.createElement('canvas');
         canvas.width = loadImage.naturalWidth;
