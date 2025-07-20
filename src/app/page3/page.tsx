@@ -395,12 +395,18 @@ export default function Page3() {
               width={300}
               height={200}
             />
-            <button onClick={() => AddToCustomPalette(pixelColor)}>
+            <button
+            style={{
+                  clear: 'both',
+                  display: 'block'}}
+            onClick={() => AddToCustomPalette(pixelColor)}>
               Add to custom palette
             </button>
           <button
                 onClick={() => setAddSwatchVisible(false)}
                 style={{
+                  clear: 'both',
+                  display: 'block',
                   padding: '8px 16px',
                   backgroundColor: '#0070f3',
                   color: 'white',
