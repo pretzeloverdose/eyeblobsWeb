@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 export default function PaletteGrid({ onAction, workingPalette, setWorkingPalette, paletteType, removeColor }) {
 
     const hslToHex = (h, s, l) => {
@@ -23,8 +25,9 @@ export default function PaletteGrid({ onAction, workingPalette, setWorkingPalett
 
     const deleteSwatch = (hIn, sIn, lIn) => {
         const newPalette = workingPalette.filter(([h, s, l]) => h !== hIn || s !== sIn || l !== lIn);
+        console.log("new " + newPalette);
         setWorkingPalette(newPalette);
-        localStorage.setItem('customPaletteColors', newPalette);
+        localStorage.setItem('customPaletteColors', JSON.stringify(newPalette));
     }
 
     return (

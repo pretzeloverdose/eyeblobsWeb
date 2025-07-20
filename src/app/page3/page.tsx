@@ -65,6 +65,7 @@ export default function Page3() {
     const savedImage = localStorage.getItem('savedImage');
     const originalImage = localStorage.getItem('savedImageOriginal');
     const storedPixelColor = localStorage.getItem('pixelColor');
+    // localStorage.setItem('customPaletteColors', '')
     
     if (storedPixelColor) {
       setPixelColor(storedPixelColor);
@@ -371,7 +372,7 @@ export default function Page3() {
       const existingCustomPalette: [number, number, number] | [] = storedCustomPalette
       ? (JSON.parse(storedCustomPalette) as [number, number, number])
       : [];
-      console.log(existingCustomPalette);
+      console.log("exisiting " + existingCustomPalette);
       const updated = [...existingCustomPalette, hsl];
       localStorage.setItem('customPaletteColors', JSON.stringify(updated));
     }

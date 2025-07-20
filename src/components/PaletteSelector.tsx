@@ -8,7 +8,7 @@ import { extractImageColors } from '../services/imageColorService';
 const paletteMap: any = palettes;
 
 type PaletteSelectorRef = {
-  addToPalette: () => void;
+  addToPalette: () => void
 };
 
 type Props = {
@@ -22,12 +22,15 @@ const PaletteSelector = forwardRef<PaletteSelectorRef, Props>(
   const [workingPalette, setWorkingPalette] = useState(paletteMap['primary']);
 
   const addToPalette = () => {
-    if (localStorage.getItem('selectedPalette') == "customPaletteColors") {
-      setSelectedPalette("customPaletteColors");
+    if (selectedPalette == "customPaletteColors") {
       setWorkingPalette(getStoredPalette());
     }
+      const savedPalette = localStorage.getItem('selectedPalette');
+      if (savedPalette) {
+        setSelectedPalette('customPaletteColors');
+      }
   };
-  
+
   // Load image colors on initial render
     useEffect(() => {
         const savedPalette = localStorage.getItem('selectedPalette');
@@ -36,7 +39,6 @@ const PaletteSelector = forwardRef<PaletteSelectorRef, Props>(
         if (savedPalette) {
                 const imageColors = await extractImageColors();
                 if (imageColors && localStorage.getItem('selectedPalette') == "Image") {
-                    console.log("set working as image " + imageColors);
                     setWorkingPalette(imageColors);
                     // Optional: set as selected if you want image palette as default
                     setSelectedPalette("Image");
@@ -55,14 +57,14 @@ const PaletteSelector = forwardRef<PaletteSelectorRef, Props>(
     }, []);
 
   useImperativeHandle(ref, () => ({
-    addToPalette,
+    addToPalette
   }));
 
   function getStoredPalette(): number[][] {
   try {
     const stored = localStorage.getItem('customPaletteColors');
     if (!stored) return [];
-    
+    console.log(stored);
     const parsed = JSON.parse(stored);
     
     // Validate it's an array of number arrays
@@ -79,13 +81,19 @@ const PaletteSelector = forwardRef<PaletteSelectorRef, Props>(
   }
 }
 useEffect(() => {
+  console.log("foo");
   if (selectedPalette == "customPaletteColors") {
     setWorkingPalette(getStoredPalette());
+    setSelectedPalette("customPaletteColors");
+  } else {
+    setWorkingPalette(paletteMap[selectedPalette]);
+    setSelectedPalette(selectedPalette);
   }
 }, [selectedPalette]);
 
 useEffect(() => {
   console.log("update");
+
 }, [workingPalette]);
 
 const paletteGrid = () => {
