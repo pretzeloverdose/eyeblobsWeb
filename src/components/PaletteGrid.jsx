@@ -41,7 +41,7 @@ export default function PaletteGrid({ onAction, workingPalette, setWorkingPalett
             display: "inline-block",
             float: 'left' }}>
                     {paletteType == "customPaletteColors" && ( 
-                        <div key={index+'d'} style={{ position: 'absolute', right: 15, top: 0, height: 6, width: 6, zIndex: 300 }}>
+                        <div key={index+'d'} style={{ position: 'absolute', right: 15, top: 0, height: 6, width: 6, zIndex: 2 }}>
                             <button onClick={() => deleteSwatch(h, s, l)} style={{ padding: '0px 5px 0px 5px', borderRadius: 0 }}>x</button>
                             </div>)}
                     <div 
