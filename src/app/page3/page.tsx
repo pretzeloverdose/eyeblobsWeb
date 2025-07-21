@@ -4,6 +4,8 @@ import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'reac
 
 import { calculateBounds, findWeightedMidpointHsl, hexToCmyk, hexToHslToString, hexToRgb, hexToRgbArray, hslToRgb, rgbToHsl } from '@/functions/imageUtils';
 
+import StrengthSlider from '@/components/StrengthSlider'
+
 import zornPalette from '@/palettes/zornPalette';
 import PaletteSelector from '../../components/PaletteSelector';
 import { extractImageColors } from '../../services/imageColorService';
@@ -379,23 +381,22 @@ export default function Page3() {
   return (
     <div>
       {addSwatchVisible && (
-        <div className='modalDiv'>
-          <div className='modalContent'>
-            <ColorPicker
-              initialColor={hexToRgbArray(pixelColor)}
-              onChange={SetPixelColorFromPicker}
-              width={300}
-              height={200}
-            />
-            <button className='modalButton' onClick={() => AddToCustomPalette(pixelColor)}>
-              Add to custom palette
-            </button>
-            <button className='modalCloseButton' onClick={() => setAddSwatchVisible(false)}>
-              Close
-            </button>
-          </div>
-        </div>
+        <Modal>
+          <ColorPicker
+            initialColor={hexToRgbArray(pixelColor)}
+            onChange={SetPixelColorFromPicker}
+            width={300}
+            height={200}
+          />
+          <button className="modalButton" onClick={() => AddToCustomPalette(pixelColor)}>
+            Add to custom palette
+          </button>
+          <button className="modalCloseButton" onClick={() => setAddSwatchVisible(false)}>
+            Close
+          </button>
+        </Modal>
       )}
+
       {isProcessing && (
         <div className='modalDiv'>
           <div className='spinner-lg' />
@@ -407,25 +408,7 @@ export default function Page3() {
           <div className='modalContent'>
             <h3>Set Filter Strength</h3>
             <p>Choose a value between 1 and 100:</p>
-            <div className='rangeContainer'>
-              <input
-                type="range"
-                min="1"
-                max="100"
-                step="1"
-                title='setStrength'
-                value={strengthValue}
-                onChange={(e) => setStrengthValue(e.target.value)}
-                onBlur={() => {
-                  const parsed = parseInt(strengthValue);
-                  setStrengthValue(
-                    isNaN(parsed) ? "50" : Math.min(100, Math.max(1, parsed)).toString()
-                  );
-                }}
-                style={{ width: '100%' }}
-              />
-              <div style={{ textAlign: 'center' }}>{strengthValue}</div>
-            </div>
+            <StrengthSlider value={strengthValue} setValue={setStrengthValue} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button className='modalCancel' onClick={() => setShowStrengthModal(false)}>
                 Cancel
