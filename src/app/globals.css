@@ -124,6 +124,34 @@ button {
   font-size: 11px;
 }
 
+.uploadBtn {
+  padding: 5px 10px;
+  background-color: #0071bd;
+  color: white;
+  border: 'none';
+  border-radius: 5px;
+  cursor: 'pointer';
+  font-size: 13px;
+}
+.cropBtn {
+  padding: 5px 10px;
+  background-color: #0071bd;
+  color: white;
+  border: 'none';
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.previewCanvas {
+  border: 1px solid black;
+  object-fit: contain;
+  visibility: hidden;
+  display: none;
+}
+
+
+
 @media screen and (max-width: 767px) {
   .homePage h1 {
     font-size: 28px;

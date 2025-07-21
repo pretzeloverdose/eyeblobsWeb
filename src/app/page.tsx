@@ -280,15 +280,7 @@ useEffect(() => {
           {introVisible && intro()}
           <button
             onClick={handleButtonClick}
-            style={{
-              padding: '5px 10px',
-              backgroundColor: '#0071bd',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
+            className="uploadBtn"
           >
             Upload Image
           </button>

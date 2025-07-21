@@ -10,6 +10,8 @@ import { extractImageColors } from '../../services/imageColorService';
 import palettes from '@/palettes';
 import { ColorPicker, HSL, RGB, rgbToHex } from 'next-colors';
 
+import './Page3.css';
+
 
 export default function Page3() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -91,21 +93,8 @@ export default function Page3() {
   const renderImageContent = () => {
     if (isImageLoading) {
       return (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '300px',
-          width: '100%'
-        }}>
-          <div style={{
-            border: '4px solid #f3f3f3',
-            borderTop: '4px solid #3498db',
-            borderRadius: '50%',
-            width: '40px',
-            height: '40px',
-            animation: 'spin 1s linear infinite'
-          }} />
+        <div className="imageLoadingContainer">
+          <div className="spinner" />
         </div>
       );
     }
@@ -127,21 +116,8 @@ export default function Page3() {
             }
           }}
           style={{ display: 'block' }}
-          onLoad={() => setIsImageLoading(false)}
-          onError={() => setIsImageLoading(false)}
         />
-        <div
-          onClick={handleOverlayClick}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            cursor: 'crosshair',
-            zIndex: 10
-          }}
-        />
+        <div onClick={handleOverlayClick} className="imageOverlay" />
       </>
     );
   };
@@ -404,159 +380,64 @@ export default function Page3() {
     <div>
       {addSwatchVisible && (
         <div className='modalDiv'>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '8px',
-            maxWidth: '400px',
-            width: '100%'
-          }}>
+          <div className='modalContent'>
             <ColorPicker
-              initialColor={ hexToRgbArray(pixelColor) }
-              onChange={(color) => SetPixelColorFromPicker(color)}
+              initialColor={hexToRgbArray(pixelColor)}
+              onChange={SetPixelColorFromPicker}
               width={300}
               height={200}
             />
-            <button
-            style={{
-                  clear: 'both',
-                  display: 'block'}}
-            onClick={() => AddToCustomPalette(pixelColor)}>
+            <button className='modalButton' onClick={() => AddToCustomPalette(pixelColor)}>
               Add to custom palette
             </button>
-          <button
-                onClick={() => setAddSwatchVisible(false)}
-                style={{
-                  clear: 'both',
-                  display: 'block',
-                  padding: '8px 16px',
-                  backgroundColor: '#0070f3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px'
-                }}
-              >close</button>
-              </div>
+            <button className='modalCloseButton' onClick={() => setAddSwatchVisible(false)}>
+              Close
+            </button>
+          </div>
         </div>
       )}
       {isProcessing && (
         <div className='modalDiv'>
-          <div style={{
-            border: '6px solid #f3f3f3',
-            borderTop: '6px solid #3498db',
-            borderRadius: '50%',
-            width: '60px',
-            height: '60px',
-            animation: 'spin 1s linear infinite',
-            marginBottom: '20px'
-          }} />
+          <div className='spinner-lg' />
           Processing...
         </div>
       )}
       {showStrengthModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '8px',
-            maxWidth: '400px',
-            width: '100%'
-          }}>
+        <div className='modalDiv'>
+          <div className='modalContent'>
             <h3>Set Filter Strength</h3>
             <p>Choose a value between 1 and 100:</p>
-            <div
-              style={{
-                width: '100%',
-                padding: '8px',
-                margin: '10px 0',
-                fontSize: '16px'
-              }}
-            >
-            <input
-              type="range"
-              min="1"
-              max="100"
-              step="1"
-              title='setStrength'
-              placeholder=''
-              value={strengthValue}
-              onChange={(e) => setStrengthValue(e.target.value)}
-              onBlur={() => {
-                const parsed = parseInt(strengthValue);
-                if (isNaN(parsed)) {
-                  setStrengthValue("50"); // Fallback
-                } else {
-                  setStrengthValue(Math.min(100, Math.max(1, parsed)).toString());
-                }
-              }}
-              style={{
-                width: '100%'
-              }}
-            /><div style={{ textAlign: 'center'}}>{strengthValue}</div>
-            </div>
-            {/* <input
-              type="number"
-              min="1"
-              max="100"
-              value={strengthValue}
-              onChange={(e) => {
-                setStrengthValue(e.target.value); // Keep raw input
-              }}
-              onBlur={() => {
-                // Validate on blur
-                const parsed = parseInt(strengthValue);
-                if (isNaN(parsed)) {
-                  setStrengthValue("30"); // Fallback
-                } else {
-                  setStrengthValue(Math.min(100, Math.max(1, parsed)).toString());
-                }
-              }}
-              style={{
-                width: '100%',
-                padding: '8px',
-                margin: '10px 0',
-                fontSize: '16px'
-              }}
-            /> */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
-                onClick={() => setShowStrengthModal(false)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#f0f0f0',
-                  border: 'none',
-                  borderRadius: '4px'
+            <div className='rangeContainer'>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                title='setStrength'
+                value={strengthValue}
+                onChange={(e) => setStrengthValue(e.target.value)}
+                onBlur={() => {
+                  const parsed = parseInt(strengthValue);
+                  setStrengthValue(
+                    isNaN(parsed) ? "50" : Math.min(100, Math.max(1, parsed)).toString()
+                  );
                 }}
-              >
+                style={{ width: '100%' }}
+              />
+              <div style={{ textAlign: 'center' }}>{strengthValue}</div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button className='modalCancel' onClick={() => setShowStrengthModal(false)}>
                 Cancel
               </button>
-              <button
-                onClick={applyZornFilterWithStrength}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#0070f3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px'
-                }}
-              >
+              <button className='modalButton' onClick={applyZornFilterWithStrength}>
                 Apply
               </button>
             </div>
           </div>
         </div>
       )}
+
       <div className="editImageWrap">
         <canvas ref={canvasRef} style={{ display: 'none' }} />
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -574,39 +455,19 @@ export default function Page3() {
             maxPositionY={calculateBounds(imgRef, transformState).maxPositionY}
             minPositionY={calculateBounds(imgRef, transformState).minPositionY}
           >
-            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
-              <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                <div style={{ position: 'relative' }}>
-                  {renderImageContent()}
-                </div>
-              </TransformComponent>
-            )}
+            <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
+              <div style={{ position: 'relative' }}>{renderImageContent()}</div>
+            </TransformComponent>
           </TransformWrapper>
         </div>
-
       </div>
+
       <div style={{ display: 'flex' }}>
-        <div style={{ width: '50%', paddingRight: '10px' }}>
+        <div className="editPanelLeft">
           {pixelColor && (
-            <div style={{
-              marginTop: '1rem',
-              padding: '1rem',
-              background: '#f0f0f0',
-              borderRadius: '4px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }} className='swatchDiv'>
+            <div className='swatchDiv'>
               <p>Tap image above to get pixel colour</p>
-              <div style={{
-                width: '150px',
-                height: '100px',
-                background: pixelColor,
-                clear: 'both',
-                display: 'block',
-                border: '1px solid #000'
-              }} />
+              <div className='colorPreview' style={{ background: pixelColor }} />
               <button className='addSwatch' onClick={addSwatch}>+ Add swatch to custom palette</button>
               <div>
                 <p>HEX: {pixelColor}</p>
@@ -618,32 +479,16 @@ export default function Page3() {
             </div>
           )}
         </div>
-        <div style={{ width: '40%', marginTop: '0.8rem' }}>
-          <button
-            onClick={invertImageColors}
-            className="editButton"
-          >
-            Invert Colors
-          </button>
-          <button onClick={flipImageHorizontally} className="editButton">
-            Flip Horizontally
-          </button>
-          <button onClick={flipImageVertically} className="editButton">
-            Flip Vertically
-          </button>
-          <button onClick={applyPalette} className='editButton'>
-            Apply Palette to Image
-          </button>
-          {/* <button className='editButton'>
-            Undo
-          </button> */}
-          <button onClick={revertToOriginal} className='editButton'>
-            Revert to Original Image
-          </button>
+        <div className="editPanelRight">
+          <button onClick={invertImageColors} className="editButton">Invert Colors</button>
+          <button onClick={flipImageHorizontally} className="editButton">Flip Horizontally</button>
+          <button onClick={flipImageVertically} className="editButton">Flip Vertically</button>
+          <button onClick={applyPalette} className='editButton'>Apply Palette to Image</button>
+          <button onClick={revertToOriginal} className='editButton'>Revert to Original Image</button>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', marginBottom: '200px' }}>
+      <div className="paletteSelectorWrap">
         <PaletteSelector ref={paletteSelectorRef} onPrimaryPaletteAction={handlePaletteAction} />
       </div>
     </div>

@@ -1,0 +1,156 @@
+/* General Spinner Animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal Overlay */
+.modalDiv {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal Box */
+.modalContent {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Spinner Circle */
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+/* Larger spinner for processing overlay */
+.spinner-lg {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+/* Swatch Info Card */
+.swatchDiv {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f0f0f0;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Color Block Display */
+.colorPreview {
+  width: 150px;
+  height: 100px;
+  clear: both;
+  display: block;
+  border: 1px solid #000;
+}
+
+/* Button Shared Style */
+.editButton {
+  display: block;
+  margin-bottom: 0.2rem;
+  padding: 8px 16px;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Button used in the modal and swatch adder */
+.modalButton,
+.modalCloseButton {
+  clear: both;
+  display: block;
+  padding: 8px 16px;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Cancel button in modal */
+.modalCancel {
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Input range container */
+.rangeContainer {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+/* Image Placeholder */
+.imageLoadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: 100%;
+}
+
+/* Image overlay for click-to-pick */
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: crosshair;
+  z-index: 10;
+}
+
+/* Wrapper for the editable image section */
+.editImageWrap {
+  margin-bottom: 1rem;
+}
+
+/* Main layout */
+.editPanelLeft {
+  width: 50%;
+  padding-right: 10px;
+}
+
+.editPanelRight {
+  width: 40%;
+  margin-top: 0.8rem;
+}
+
+/* Palette selector area */
+.paletteSelectorWrap {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 200px;
+}
