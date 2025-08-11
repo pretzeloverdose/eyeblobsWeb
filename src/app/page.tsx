@@ -318,28 +318,18 @@ useEffect(() => {
             <div>
               <div className="Crop-Controls">
                 <button
-                  style={{
-                    padding: '5px 10px',
-                    backgroundColor: '#0071bd',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontSize: '13px'
-                  }} onClick={saveImage}>Save Image</button>
+                  className="cropBtn"
+                  onClick={saveImage}>Save Image</button>
                 {completedMessage &&
                   <p style={{ marginTop: 15 }}>{completedMessage}</p>
                 }
               </div>
               <canvas
                 ref={previewCanvasRef}
+                className='previewCanvas'
                 style={{
-                  border: '1px solid black',
-                  objectFit: 'contain',
                   width: completedCrop.width,
                   height: completedCrop.height,
-                  visibility: 'hidden',
-                  display: 'none'
                 }}
               />
             </div>
