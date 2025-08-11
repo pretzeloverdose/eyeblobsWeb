@@ -3,3 +3,5 @@ const Modal: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="modalContent">{children}</div>
   </div>
 );
+
+export default Modal
