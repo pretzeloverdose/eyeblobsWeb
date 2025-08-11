@@ -1,5 +1,6 @@
 'use client';
 import { RefObject, useEffect, useRef, useState } from 'react';
+import Modal from '../../components/Modal'
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
 import { calculateBounds, findWeightedMidpointHsl, hexToCmyk, hexToHslToString, hexToRgb, hexToRgbArray, hslToRgb, rgbToHsl } from '@/functions/imageUtils';
