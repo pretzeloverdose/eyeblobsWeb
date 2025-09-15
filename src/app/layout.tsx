@@ -13,8 +13,6 @@ const tagManagerArgs = {
   gtmId: 'GTM-XBJ0EN40KZ', // Replace this with your actual GTM ID
 };
 
-TagManager.initialize(tagManagerArgs);
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
