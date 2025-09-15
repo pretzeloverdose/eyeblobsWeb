@@ -10,6 +10,7 @@
     "export": "next export"
   },
   "dependencies": {
+    "@next/third-parties": "^15.5.3",
     "dompurify": "^3.2.6",
     "next": "15.3.4",
     "next-colors": "^1.2.1",
@@ -17,7 +18,6 @@
     "react": "^19.0.0",
     "react-color": "^2.19.3",
     "react-dom": "^19.0.0",
-    "react-gtm-module": "^2.0.11",
     "react-image-crop": "^11.0.10",
     "react-zoom-pan-pinch": "^3.7.0"
   },
