@@ -5,6 +5,14 @@ import Navbar from "../components/Navbar";
 import { ImageProvider } from "../context/ImageContext";
 import { TipsProvider } from '../context/TipsContext';
 import { TipsModal } from '../components/TipsModal';
+import TagManager from 'react-gtm-module';
+
+// Initialize GTM with your GTM ID
+const tagManagerArgs = {
+  gtmId: 'GTM-XBJ0EN40KZ', // Replace this with your actual GTM ID
+};
+
+TagManager.initialize(tagManagerArgs);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

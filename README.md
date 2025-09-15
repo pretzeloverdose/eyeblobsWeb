@@ -3,6 +3,9 @@ This is a project designed to aid traditional artists with digital tools such as
 Note: To use the camera in the reverse lightbox, SSL must be used.
 Note: When in some directories other than "/" you may have to set basePath on line 30 of next.config.ts
 
+TODO
+- accurate palette application
+
 ## Getting Started
 
 1. Install the dependencies:

@@ -325,8 +325,6 @@ export default function Page3() {
           }
         }
 
-        console.log("p load " + palettesVar['monet']);
-
         const canvas = document.createElement('canvas');
         canvas.width = loadImage.naturalWidth;
         canvas.height = loadImage.naturalHeight;
