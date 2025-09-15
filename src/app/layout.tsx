@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { ImageProvider } from "../context/ImageContext";
 import { TipsProvider } from '../context/TipsContext';
 import { TipsModal } from '../components/TipsModal';
+import { useEffect } from "react";
 import TagManager from 'react-gtm-module';
 
 // Initialize GTM with your GTM ID
@@ -34,6 +35,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useEffect(() => {
+    TagManager.initialize({ gtmId: 'GTM-XBJ0EN40KZ' });
+  }, []);
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
