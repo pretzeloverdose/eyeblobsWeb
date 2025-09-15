@@ -6,6 +6,7 @@ import { ImageProvider } from "../context/ImageContext";
 import { TipsProvider } from '../context/TipsContext';
 import { TipsModal } from '../components/TipsModal';
 import { GoogleAnalytics } from '@next/third-parties/google'
+import Head from 'next/head'
 
 // Initialize GTM with your GTM ID
 const tagManagerArgs = {
@@ -35,6 +36,16 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XBJ0EN40KZ"></script>
+        <script>{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-XBJ0EN40KZ');
+        `}</script>
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ImageProvider>
           <TipsProvider>
@@ -44,7 +55,6 @@ export default function RootLayout({
           </TipsProvider>
         </ImageProvider>
       </body>
-      <GoogleAnalytics gaId="G-XBJ0EN40KZ" />
     </html>
   );
 }
