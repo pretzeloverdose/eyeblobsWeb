@@ -11,6 +11,13 @@
   },
   "dependencies": {
     "@next/third-parties": "^15.5.3",
+    "@react-three/cannon": "^6.6.0",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
+    "@react-three/xr": "^6.6.26",
+    "@shopify/react-native-skia": "^2.2.18",
+    "@tensorflow-models/coco-ssd": "^2.2.3",
+    "@tensorflow/tfjs": "^4.22.0",
     "dompurify": "^3.2.6",
     "next": "15.3.4",
     "next-colors": "^1.2.1",
@@ -19,7 +26,12 @@
     "react-color": "^2.19.3",
     "react-dom": "^19.0.0",
     "react-image-crop": "^11.0.10",
-    "react-zoom-pan-pinch": "^3.7.0"
+    "react-native-fast-opencv": "^0.4.6",
+    "react-native-vision-camera": "^4.7.2",
+    "react-perspective-transform": "^2.0.3",
+    "react-zoom-pan-pinch": "^3.7.0",
+    "three": "^0.180.0",
+    "vision-camera-resize-plugin": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
