@@ -22,14 +22,19 @@ function ImageProcessor() {
   const [editable, setEditable] = useState(true);
   const [aspectRatioCompensation, setAspectRatioCompensation] = useState(1);
 
-  // Get the correct path for OpenCV.js based on environment
-  const getOpenCVPath = () => {
+  // Get the correct path for assets based on environment
+  const getAssetPath = (assetPath: string) => {
     // In production, use the basePath
     if (process.env.NODE_ENV === 'production') {
-      return '/eyeblobs/app/opencv/opencv.js'
+      return `/eyeblobs/app${assetPath}`
     }
     // In development, use the standard path
-    return '/opencv/opencv.js'
+    return assetPath
+  }
+
+  // Get the correct path for OpenCV.js based on environment
+  const getOpenCVPath = () => {
+    return getAssetPath('/opencv/opencv.js')
   }
 
   useEffect(() => {
@@ -479,7 +484,7 @@ function ImageProcessor() {
       onEditableChange={setEditable}
     >
         <img 
-          src="/source1.jpg" 
+          src={getAssetPath("/source1.jpg")} 
           alt="Instructions" 
           style={{ 
             width: '100%', 
@@ -494,7 +499,7 @@ function ImageProcessor() {
         {/* Hidden source image for perspective transform */}
         <img 
           ref={sourceImageRef}
-          src="/source1.jpg" 
+          src={getAssetPath("/source1.jpg")} 
           alt="Source for transform" 
           style={{ display: 'none' }}
           crossOrigin="anonymous"
@@ -502,7 +507,7 @@ function ImageProcessor() {
         
         <img 
           ref={imageRef}
-          src="/test5.jpg" 
+          src={getAssetPath("/test5.jpg")} 
           alt="Test paper" 
           style={{ display: 'none' }}
           onLoad={handleImageLoad}
