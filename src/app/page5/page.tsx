@@ -22,6 +22,16 @@ function ImageProcessor() {
   const [editable, setEditable] = useState(true);
   const [aspectRatioCompensation, setAspectRatioCompensation] = useState(1);
 
+  // Get the correct path for OpenCV.js based on environment
+  const getOpenCVPath = () => {
+    // In production, use the basePath
+    if (process.env.NODE_ENV === 'production') {
+      return '/eyeblobs/app/opencv/opencv.js'
+    }
+    // In development, use the standard path
+    return '/opencv/opencv.js'
+  }
+
   useEffect(() => {
     const loadOpenCV = () => {
       setLoadingStatus('Checking if OpenCV is already loaded...')
@@ -34,7 +44,8 @@ function ImageProcessor() {
         return
       }
 
-      const existingScript = document.querySelector('script[src="/opencv/opencv.js"]')
+      const openCVPath = getOpenCVPath()
+      const existingScript = document.querySelector(`script[src="${openCVPath}"]`)
       if (existingScript) {
         setLoadingStatus('OpenCV script already exists, waiting for initialization...')
         return
@@ -43,7 +54,7 @@ function ImageProcessor() {
       setLoadingStatus('Loading OpenCV.js script...')
       
       const script = document.createElement('script')
-      script.src = '/opencv/opencv.js'
+      script.src = openCVPath
       script.async = true
       
       script.onload = () => {
@@ -65,7 +76,7 @@ function ImageProcessor() {
       }
 
       script.onerror = (error) => {
-        const errorMsg = 'Failed to load OpenCV.js script. Please check if the file exists at /opencv/opencv.js'
+        const errorMsg = `Failed to load OpenCV.js script. Please check if the file exists at ${openCVPath}`
         setLoadingError(errorMsg)
         setLoadingStatus('Failed to load')
         console.error(errorMsg, error)
@@ -77,7 +88,8 @@ function ImageProcessor() {
     loadOpenCV()
 
     return () => {
-      const scripts = document.querySelectorAll('script[src="/opencv/opencv.js"]')
+      const openCVPath = getOpenCVPath()
+      const scripts = document.querySelectorAll(`script[src="${openCVPath}"]`)
       scripts.forEach(script => script.remove())
     }
   }, [])
