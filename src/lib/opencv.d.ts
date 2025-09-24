@@ -19,9 +19,7 @@ interface OpenCV {
   approxPolyDP: (curve: any, approx: any, epsilon: number, closed: boolean) => void;
   getPerspectiveTransform: (src: any, dst: any) => any;
   warpPerspective: (src: any, dst: any, M: any, dsize: any) => void;
-  drawContours: (image: any, contours: any, contourIdx: number, color: any, thickness: number) => void;
-  line: (img: any, pt1: any, pt2: any, color: any, thickness?: number) => void;
-  floodFill: (image: any, mask: any, seedPoint: any, newVal: any) => void;
+  fillPoly: (img: any, pts: any, color: any) => void;
   matFromArray: (rows: number, cols: number, type: number, array: number[]) => any;
   threshold: (src: any, dst: any, thresh: number, maxval: number, type: any) => void;
   boundingRect: (contour: any) => any;

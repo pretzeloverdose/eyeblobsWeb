@@ -2,15 +2,19 @@
 import { Console } from 'console'
 import React, { useEffect, useState, useRef } from 'react'
 import { PerspectiveTransform } from 'react-perspective-transform';
+import { sortCornersClockwise, Corner } from '../../functions/cornerDetection';
+import { applyPerspectiveTransform as applyTransform } from '../../functions/perspectiveTransform';
+import { detectPaperCorners } from '../../functions/paperDetection';
+import { updatePointsFromCorners, PerspectivePoints } from '../../functions/pointsUtils';
 
-function ImageProcessor() {
+function ImageProcessorB() {
   const [cvLoaded, setCvLoaded] = useState(false)
   const [cv, setCv] = useState<any>(null)
   const [loadingError, setLoadingError] = useState<string | null>(null)
   const [loadingStatus, setLoadingStatus] = useState<string>('Initializing...')
-  const [corners, setCorners] = useState<any[]>([])
+  const [corners, setCorners] = useState<Corner[]>([])
   const [showOverlay, setShowOverlay] = useState(false)
-  const [points, setPoints] = useState({
+  const [points, setPoints] = useState<PerspectivePoints>({
     topLeft: { x: 0, y: 0 },
     topRight: { x: 100, y: 0 },
     bottomRight: { x: 100, y: 100 },
@@ -21,6 +25,8 @@ function ImageProcessor() {
   const sourceImageRef = useRef<HTMLImageElement>(null)
   const [editable, setEditable] = useState(true);
   const [aspectRatioCompensation, setAspectRatioCompensation] = useState(1);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [sampleImageSrc, setSampleImageSrc] = useState<string | null>(null);
 
   // Get the correct path for assets based on environment
   const getAssetPath = (assetPath: string) => {
@@ -57,6 +63,7 @@ function ImageProcessor() {
       }
 
       setLoadingStatus('Loading OpenCV.js script...')
+      console.log('Loading OpenCV from path:', openCVPath);
       
       const script = document.createElement('script')
       script.src = openCVPath
@@ -67,12 +74,15 @@ function ImageProcessor() {
         console.log('OpenCV.js script loaded successfully')
         
         const checkOpenCV = () => {
+          console.log('Checking OpenCV readiness...', { windowCv: !!window.cv, cvMat: !!(window.cv && window.cv.Mat) });
           if (window.cv && window.cv.Mat) {
+            console.log('OpenCV ready! Setting cv state...');
             setCv(window.cv)
             setCvLoaded(true)
             setLoadingStatus('OpenCV.js is ready!')
             console.log('OpenCV.js is fully initialized and ready')
           } else {
+            console.log('OpenCV not ready yet, checking again in 100ms...');
             setTimeout(checkOpenCV, 100)
           }
         }
@@ -99,365 +109,208 @@ function ImageProcessor() {
     }
   }, [])
 
-  const detectB = () => {
-
-  }
-
   const applyPerspectiveTransform = () => {
     if (!cv || !canvasRef.current || !sourceImageRef.current || corners.length !== 4) {
       console.log('Cannot apply perspective transform: missing requirements')
       return
     }
 
-    try {
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
-      const sourceImg = sourceImageRef.current
-
-      // Load the source image that we want to transform
-      let sourceMat: any
-      try {
-        sourceMat = cv.imread(sourceImg)
-        console.log('Source image loaded:', sourceMat.rows, 'x', sourceMat.cols)
-      } catch (e) {
-        console.error('Failed to load source image:', e)
-        return
+    applyTransform({
+      cv,
+      canvas: canvasRef.current,
+      sourceImageElement: sourceImageRef.current,
+      corners,
+      sortCornersClockwise,
+      onAspectRatioCalculated: (aspectRatio, compensationScale) => {
+        // Store the compensation value for the PerspectiveTransform component
+        setAspectRatioCompensation(compensationScale)
       }
-
-      // Sort corners to ensure proper mapping (top-left, top-right, bottom-right, bottom-left)
-      const sortedCorners = sortCornersClockwise(corners)
-
-      // Source points (corners of the source image)
-      const srcPoints = cv.matFromArray(4, 1, cv.CV_32FC2, [
-        0, 0,                                    // top-left
-        sourceMat.cols, 0,                       // top-right  
-        sourceMat.cols, sourceMat.rows,          // bottom-right
-        0, sourceMat.rows                        // bottom-left
-      ])
-
-      // Destination points (detected corners in the target image)
-      const dstPoints = cv.matFromArray(4, 1, cv.CV_32FC2, [
-        sortedCorners[0].x, sortedCorners[0].y,  // top-left
-        sortedCorners[1].x, sortedCorners[1].y,  // top-right
-        sortedCorners[2].x, sortedCorners[2].y,  // bottom-right
-        sortedCorners[3].x, sortedCorners[3].y   // bottom-left
-      ])
-
-      // get the ratio of Y to X
-      
-      // Calculate the width and height of the detected rectangle
-      const rectWidth = Math.sqrt(
-        Math.pow(sortedCorners[1].x - sortedCorners[0].x, 2) + 
-        Math.pow(sortedCorners[1].y - sortedCorners[0].y, 2)
-      )
-      const rectHeight = Math.sqrt(
-        Math.pow(sortedCorners[3].x - sortedCorners[0].x, 2) + 
-        Math.pow(sortedCorners[3].y - sortedCorners[0].y, 2)
-      )
-      
-      // Calculate aspect ratio (height/width)
-      const aspectRatio = rectHeight / rectWidth
-      const compensationScale = 1 / aspectRatio
-      
-      console.log('Rectangle dimensions:', { width: rectWidth, height: rectHeight, aspectRatio, compensationScale })
-      
-      // Apply scaleY compensation to the source image element
-      if (sourceImageRef.current) {
-        sourceImageRef.current.style.transform = `scaleY(${compensationScale})`
-      console.log('Applied scaleY compensation:', compensationScale)
-      
-      // Store the compensation value for the PerspectiveTransform component
-      setAspectRatioCompensation(compensationScale)
-    }      // Calculate perspective transformation matrix
-      const transformMatrix = cv.getPerspectiveTransform(srcPoints, dstPoints)
-
-      // Create output matrix for the transformed image
-      const transformed = new cv.Mat()
-
-      // Apply perspective transformation
-      cv.warpPerspective(
-        sourceMat, 
-        transformed, 
-        transformMatrix, 
-        new cv.Size(canvas.width, canvas.height)
-      )
-
-      // Get the current image on canvas (the detected paper image)
-      const currentImageData = ctx?.getImageData(0, 0, canvas.width, canvas.height)
-      if (currentImageData) {
-        const backgroundMat = cv.matFromImageData(currentImageData)
-        
-        // Create a mask for blending
-        const mask = new cv.Mat(canvas.height, canvas.width, cv.CV_8UC1, new cv.Scalar(0))
-        
-        // Create contour points in the correct format for fillPoly
-        const pts = cv.matFromArray(4, 1, cv.CV_32SC2, 
-          sortedCorners.flatMap(corner => [Math.round(corner.x), Math.round(corner.y)]))
-        
-        const contours = new cv.MatVector()
-        contours.push_back(pts)
-        
-        // Use drawContours with filled option instead of fillPoly
-        cv.drawContours(mask, contours, -1, new cv.Scalar(255), -1)
-
-        // Blend the transformed image with the background
-        const result = new cv.Mat()
-        backgroundMat.copyTo(result)
-
-        // Copy transformed image to result where mask is white
-        transformed.copyTo(result, mask)
-
-        // Display the result
-        cv.imshow(canvas, result)
-
-        // Cleanup
-        backgroundMat.delete()
-        mask.delete()
-        pts.delete()
-        contours.delete()
-        result.delete()
-      }
-
-      // Cleanup
-      sourceMat.delete()
-      srcPoints.delete()
-      dstPoints.delete()
-      transformMatrix.delete()
-      transformed.delete()
-
-    } catch (error) {
-      console.error('Error in perspective transform:', error)
-    }
+    })
   }
 
-  // Helper function to sort corners in clockwise order starting from top-left
-  const sortCornersClockwise = (corners: any[]) => {
-    if (corners.length !== 4) return corners
-
-    // Find center point
-    const centerX = corners.reduce((sum, corner) => sum + corner.x, 0) / 4
-    const centerY = corners.reduce((sum, corner) => sum + corner.y, 0) / 4
-
-    // Sort by angle from center
-    const cornersWithAngle = corners.map(corner => ({
-      ...corner,
-      angle: Math.atan2(corner.y - centerY, corner.x - centerX)
-    }))
-
-    cornersWithAngle.sort((a, b) => a.angle - b.angle)
-
-    // Find top-left corner (smallest x + y)
-    let topLeftIndex = 0
-    let minSum = cornersWithAngle[0].x + cornersWithAngle[0].y
+  const handleDetectPaperCorners = () => {
+    console.log('handleDetectPaperCorners called', { cv: !!cv, cvLoaded, canvas: !!canvasRef.current, sampleImageSrc: !!sampleImageSrc });
     
-    for (let i = 1; i < 4; i++) {
-      const sum = cornersWithAngle[i].x + cornersWithAngle[i].y
-      if (sum < minSum) {
-        minSum = sum
-        topLeftIndex = i
-      }
-    }
-
-    // Reorder starting from top-left, going clockwise
-    const ordered = []
-    for (let i = 0; i < 4; i++) {
-      ordered.push(cornersWithAngle[(topLeftIndex + i) % 4])
-    }
-
-    return ordered
-  }
-
-  // Function to update PerspectiveTransform points from detected corners
-  const updatePointsFromCorners = (detectedCorners: any[]) => {
-    if (detectedCorners.length !== 4) return
-
-    const sortedCorners = sortCornersClockwise(detectedCorners)
-    
-    // Convert to the format expected by react-perspective-transform
-    // Format: { topLeft: {x, y}, topRight: {x, y}, bottomRight: {x, y}, bottomLeft: {x, y} }
-    const newPoints = {
-      topLeft: { x: sortedCorners[0].x, y: sortedCorners[0].y },
-      topRight: { x: sortedCorners[1].x, y: sortedCorners[1].y },
-      bottomRight: { x: sortedCorners[2].x, y: sortedCorners[2].y },
-      bottomLeft: { x: sortedCorners[3].x, y: sortedCorners[3].y }
-    }
-    
-    console.log('Updating PerspectiveTransform points:', newPoints)
-    setPoints(newPoints)
-  }
-
-  const detectPaperCorners = () => {
-    if (!cv || !canvasRef.current || !imageRef.current) {
-      console.log('OpenCV, canvas, or image not ready')
+    if (!cv) {
+      alert('OpenCV not ready')
       return
     }
-
-    try {
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
-      const img = imageRef.current
-
-      // Ensure canvas matches image dimensions
-      canvas.width = img.naturalWidth || img.width
-      canvas.height = img.naturalHeight || img.height
-
-      // Clear canvas and draw image
-      ctx?.clearRect(0, 0, canvas.width, canvas.height)
-      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height)
-
-      // Alternative method: use cv.imread directly on the image element
-      let src: any
-      try {
-        // Method 1: Try using cv.imread (preferred for images)
-        src = cv.imread(img)
-        console.log('Image loaded with cv.imread:', src.rows, 'x', src.cols, 'channels:', src.channels(), 'type:', src.type())
-      } catch (e) {
-        console.log('cv.imread failed, trying matFromImageData...', e)
-        // Method 2: Fallback to canvas image data
-        try {
-          const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height)
-          if (!imageData) {
-            console.error('Could not get image data from canvas')
-            return
-          }
-          src = cv.matFromImageData(imageData)
-          console.log('Image loaded with matFromImageData:', src.rows, 'x', src.cols, 'channels:', src.channels(), 'type:', src.type())
-        } catch (e2) {
-          console.error('Both image loading methods failed:', e2)
-          return
-        }
-      }
-
-      const gray = new cv.Mat()
-      const blurred = new cv.Mat()
-      const edges = new cv.Mat()
-      const contours = new cv.MatVector()
-      const hierarchy = new cv.Mat()
-
-      // Validate source image before color conversion
-      if (src.channels() === 4) {
-        // RGBA to Gray conversion
-        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
-      } else if (src.channels() === 3) {
-        // RGB to Gray conversion  
-        cv.cvtColor(src, gray, cv.COLOR_RGB2GRAY)
-      } else if (src.channels() === 1) {
-        // Already grayscale, just copy
-        src.copyTo(gray)
-      } else {
-        console.error('Unsupported number of channels:', src.channels())
-        src.delete()
-        gray.delete()
-        blurred.delete()
-        edges.delete()
-        contours.delete()
-        hierarchy.delete()
-        return
-      }
-
-      console.log('Gray image created:', gray.rows, 'x', gray.cols, 'type:', gray.type())
-
-      cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0)
-      cv.Canny(blurred, edges, 50, 150)
-      cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-      let largestContour = null
-      let largestArea = 0
-
-      console.log('Contours found:', contours.size())
-
-      for (let i = 0; i < contours.size(); i++) {
-        const contour = contours.get(i)
-        const area = cv.contourArea(contour)
-        
-        const epsilon = 0.02 * cv.arcLength(contour, true)
-        const approx = new cv.Mat()
-        cv.approxPolyDP(contour, approx, epsilon, true)
-
-        if (approx.rows === 4 && area > largestArea && area > 1000) {
-          largestArea = area
-          largestContour = approx.clone()
-        }
-        
-        approx.delete()
-        contour.delete()
-      }
-
-      if (largestContour) {
-        const cornersArray = []
-        for (let i = 0; i < largestContour.rows; i++) {
-          const point = {
-            x: largestContour.data32S[i * 2],
-            y: largestContour.data32S[i * 2 + 1]
-          }
-          cornersArray.push(point)
-        }
-        
-        setCorners(cornersArray)
-        
-        // Update the PerspectiveTransform points
-        updatePointsFromCorners(cornersArray)
-
-        ctx?.drawImage(img, 0, 0)
-
-        ctx!.strokeStyle = 'red'
-        ctx!.fillStyle = 'red'
-        ctx!.lineWidth = 3
-
-        cornersArray.forEach((corner, index) => {
-          ctx?.beginPath()
-          ctx?.arc(corner.x, corner.y, 8, 0, 2 * Math.PI)
-          ctx?.fill()
-
-          ctx!.fillStyle = 'white'
-          ctx!.font = '16px Arial'
-          ctx?.fillText(`${index + 1}`, corner.x - 6, corner.y + 6)
-          ctx!.fillStyle = 'red'
-        })
-
-        ctx!.strokeStyle = 'blue'
-        ctx!.lineWidth = 2
-        ctx?.beginPath()
-        cornersArray.forEach((corner, index) => {
-          if (index === 0) {
-            ctx?.moveTo(corner.x, corner.y)
-          } else {
-            ctx?.lineTo(corner.x, corner.y)
-          }
-        })
-        ctx?.closePath()
-        ctx?.stroke()
-
-        largestContour.delete()
-      } else {
-        console.log('No quadrilateral found')
-        ctx?.drawImage(img, 0, 0)
-      }
-
-      src.delete()
-      gray.delete()
-      blurred.delete()
-      edges.delete()
-      contours.delete()
-      hierarchy.delete()
-
-    } catch (error) {
-      console.error('Error in corner detection:', error)
+    if (!canvasRef.current) {
+      alert('Canvas not ready')
+      return
     }
+    if (!sampleImageSrc) {
+      console.log('Sample image not ready')
+      return
+    }
+    
+    alert('All requirements met, detecting corners...')
+    
+    // Create a temporary image element from the video frame
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      detectPaperCorners({
+        cv,
+        canvas: canvasRef.current!,
+        imageElement: tempImg,
+        onCornersDetected: (corners: Corner[]) => {
+          console.log('Corners detected:', corners.length);
+          setCorners(corners);
+        },
+        onPointsUpdated: (points: PerspectivePoints) => {
+          console.log('Points updated:', points);
+          setPoints(points);
+        }
+      })
+    };
+    tempImg.src = sampleImageSrc;
   }
 
   const handleImageLoad = () => {
     console.log('Image loaded, detecting corners...')
     if (cvLoaded) {
-      setTimeout(detectPaperCorners, 100)
+    //  setTimeout(handleDetectPaperCorners, 100)
+    }
+  }
+
+  const handleUpdatePointsFromCorners = () => {
+    const points = updatePointsFromCorners(corners, sortCornersClockwise)
+    if (points) {
+      setPoints(points)
     }
   }
 
   useEffect(() => {
-    if (cvLoaded && imageRef.current?.complete) {
-      detectPaperCorners()
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      console.log("Camera not supported.");
+      return;
     }
-  }, [cvLoaded])
+
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        });
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      } catch (err) {
+        console.error("Camera access error:", err);
+        console.log("Could not access camera.");
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  const captureFrame = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw the current video frame to canvas
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert canvas to data URL
+    const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+    setSampleImageSrc(dataURL);
+  };
+
+  const drawSampleImageToCanvas = () => {
+    if (!sampleImageSrc || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new Image();
+    img.onload = () => {
+      // Clear canvas and draw the sample image
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = sampleImageSrc;
+  };
+
+  // Set up interval to capture frames every second
+  useEffect(() => {
+    if (!cvLoaded || !cv) {
+      console.log('OpenCV not ready yet, skipping interval setup');
+      return;
+    }
+
+    console.log('OpenCV ready, starting capture interval');
+    const interval = setInterval(() => {
+      // Capture frame first
+      if (!videoRef.current || !canvasRef.current) return;
+
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+      // Set canvas dimensions to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw the current video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Convert canvas to data URL
+      const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+      setSampleImageSrc(dataURL);
+
+      // Then detect corners using the fresh data
+      if (!cv || !canvas) {
+        console.log('OpenCV or canvas not ready for corner detection')
+        return
+      }
+      
+      console.log('Detecting corners with fresh video frame data')
+      
+      // Create a temporary image element from the video frame
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        detectPaperCorners({
+          cv,
+          canvas: canvas,
+          imageElement: tempImg,
+          onCornersDetected: (corners: Corner[]) => {
+            console.log('Corners detected:', corners.length);
+            setCorners(corners);
+          },
+          onPointsUpdated: (points: PerspectivePoints) => {
+            console.log('Points updated:', points);
+            setPoints(points);
+          }
+        })
+      };
+      tempImg.src = dataURL; // Use the fresh dataURL directly
+    }, 50); // Capture every 50ms
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [cvLoaded, cv]);
 
   if (loadingError) {
     return (
@@ -475,8 +328,27 @@ function ImageProcessor() {
       {cvLoaded && cv && (
         <p style={{ color: 'green' }}>OpenCV initialized successfully</p>
       )}
-      
-      <div style={{ marginTop: '10px', maxWidth: '600px', zIndex: 5000, position: 'absolute', opacity: 0.6 }}>
+      <div>
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            style={{ 
+              width: "100%", 
+              height: "50%", 
+              backgroundColor: "#000", 
+              zIndex: 20, 
+              position: "absolute", 
+              top: 0,
+              pointerEvents: "none",
+              display: 'none'
+            }}
+          />
+          <canvas
+            ref={canvasRef}
+            style={{ width: '512px' }}
+          />
+      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: 0.6, width: '200px', height: 'auto' }}>
         <PerspectiveTransform
       points={points}
       onPointsChange={setPoints}
@@ -487,29 +359,28 @@ function ImageProcessor() {
           src={getAssetPath("/source1.jpg")} 
           alt="Instructions" 
           style={{ 
-            width: '100%', 
-            border: '1px solid #ccc',
-            transform: `scaleY(${aspectRatioCompensation})`
+            border: '1px solid #ccc', width: '200px', height: 'auto'
           }}
         />
         </PerspectiveTransform>
       </div>
 
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ position: 'absolute', top: '0px', left: '0px', marginTop: '0px', zIndex: 4000, width: '300px', height: '300px' }}>
         {/* Hidden source image for perspective transform */}
         <img 
           ref={sourceImageRef}
           src={getAssetPath("/source1.jpg")} 
           alt="Source for transform" 
-          style={{ display: 'none' }}
+          style={{ display: 'none', width: '0px', height: '0px', transform: `scaleY(${aspectRatioCompensation})` }}
           crossOrigin="anonymous"
         />
         
         <img 
           ref={imageRef}
-          src={getAssetPath("/test5.jpg")} 
+          src={sampleImageSrc || getAssetPath("/test5.jpg")} 
           alt="Test paper" 
-          style={{ display: 'none' }}
+          style={{ display: 'none',
+            transformOrigin: 'top left' }}
           onLoad={handleImageLoad}
           onError={(e) => {
             console.error('Failed to load image:', e)
@@ -520,9 +391,9 @@ function ImageProcessor() {
         <canvas 
           ref={canvasRef}
           style={{ 
-            maxWidth: '30%', 
             border: '1px solid #ccc',
-            display: cvLoaded ? 'block' : 'none'
+            display: cvLoaded ? 'block' : 'none',
+            width: '512px'
           }}
         />
         {!cvLoaded && (
@@ -539,9 +410,9 @@ function ImageProcessor() {
           </div>
         )}
       </div>
-
+</div>
       {corners.length > 0 && (
-        <div style={{ marginTop: '20px' }}>
+        <div style={{ position: 'absolute', top: '320px', left: '10px', zIndex: 4000, backgroundColor: 'white', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', width: '300px' }}>
           <h3>Detected Corners:</h3>
           <ul>
             {corners.map((corner, index) => (
@@ -552,12 +423,12 @@ function ImageProcessor() {
           </ul>
           
           <div style={{ marginTop: '15px' }}>
-            <button onClick={detectPaperCorners} style={{ marginRight: '10px' }}>
+            <button onClick={handleDetectPaperCorners} style={{ marginRight: '10px' }}>
               Re-detect Corners
             </button>
             
             <button 
-              onClick={() => updatePointsFromCorners(corners)}
+              onClick={handleUpdatePointsFromCorners}
               style={{ 
                 marginRight: '10px',
                 backgroundColor: '#28a745',
@@ -587,7 +458,7 @@ function ImageProcessor() {
             </button>
             
             <button 
-              onClick={detectPaperCorners}
+              onClick={handleDetectPaperCorners}
               style={{ 
                 backgroundColor: '#6c757d',
                 color: 'white',
@@ -612,7 +483,7 @@ function ImageProcessor() {
           </div>
         </div>
       )}
-          <button onClick={detectPaperCorners} style={{ marginTop: '10px' }}>
+          <button onClick={handleDetectPaperCorners} style={{ marginTop: '10px' }}>
             Re-detect Corners
           </button>
     </div>
@@ -622,7 +493,7 @@ function ImageProcessor() {
 export default function Page5() {
   return (
     <div>
-      <ImageProcessor />
+      <ImageProcessorB />
     </div>
   )
 }
