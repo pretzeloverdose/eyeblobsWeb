@@ -8,6 +8,7 @@ export interface PaperDetectionParams {
   cv: any;
   canvas: HTMLCanvasElement;
   imageElement: HTMLImageElement;
+  refIMG?: HTMLImageElement;
   onCornersDetected?: (corners: Corner[]) => void;
   onPointsUpdated?: (points: PerspectivePoints) => void;
 }
@@ -16,6 +17,7 @@ export const detectPaperCorners = ({
   cv,
   canvas,
   imageElement,
+  refIMG,
   onCornersDetected,
   onPointsUpdated
 }: PaperDetectionParams): Corner[] => {
@@ -24,13 +26,17 @@ export const detectPaperCorners = ({
     return []
   }
 
+  const refWidth = refIMG ? refIMG.naturalWidth : 0;
+  const refHeight = refIMG ? refIMG.naturalHeight : 0;
+  // alert(`Reference Image Dimensions: ${refWidth} x ${refHeight}`);
+
   const detectedCorners = detectCorners({
     cv,
     canvas,
     imageElement,
     onCornersDetected: (corners) => {
       // Update the PerspectiveTransform points
-      const points = updatePointsFromCorners(corners, sortCornersClockwise)
+      const points = updatePointsFromCorners(corners, sortCornersClockwise, (refWidth && refHeight) ? (refWidth / refHeight) : undefined);
       
       if (onCornersDetected) {
         onCornersDetected(corners)
@@ -44,7 +50,7 @@ export const detectPaperCorners = ({
 
   // Set corners in state if callback wasn't used
   if (detectedCorners.length > 0) {
-    const points = updatePointsFromCorners(detectedCorners, sortCornersClockwise)
+    const points = updatePointsFromCorners(detectedCorners, sortCornersClockwise, (refWidth && refHeight) ? (refWidth / refHeight) : undefined);
     
     if (onCornersDetected) {
       onCornersDetected(detectedCorners)

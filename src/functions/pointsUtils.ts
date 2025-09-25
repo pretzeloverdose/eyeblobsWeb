@@ -12,12 +12,13 @@ export interface PerspectivePoints {
 // Function to update PerspectiveTransform points from detected corners
 export const updatePointsFromCorners = (
   detectedCorners: Corner[],
-  sortCornersClockwise: (corners: Corner[]) => Corner[]
+  sortCornersClockwise: (corners: Corner[]) => Corner[],
+  ratio?: number
 ): PerspectivePoints | null => {
   if (detectedCorners.length !== 4) return null
 
   const sortedCorners = sortCornersClockwise(detectedCorners)
-  
+
   // Convert to the format expected by react-perspective-transform
   // Format: { topLeft: {x, y}, topRight: {x, y}, bottomRight: {x, y}, bottomLeft: {x, y} }
   const newPoints: PerspectivePoints = {

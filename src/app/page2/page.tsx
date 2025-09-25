@@ -16,12 +16,6 @@ function ImageProcessorB() {
   const [corners, setCorners] = useState<Corner[]>([])
   const [showOverlay, setShowOverlay] = useState(false)
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [points, setPoints] = useState<PerspectivePoints>({
-    topLeft: { x: 0, y: 0 },
-    topRight: { x: 200, y: 0 },
-    bottomRight: { x: 200, y: 200 },
-    bottomLeft: { x: 0, y: 200 }
-  })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const sourceImageRef = useRef<HTMLImageElement>(null)
@@ -31,16 +25,36 @@ function ImageProcessorB() {
   const [sampleImageSrc, setSampleImageSrc] = useState<string | null>(null);
   const [opacity, setOpacity] = useState(0.7);
   const [lockImage, setLockImage] = useState(false);
+  const [points, setPoints] = useState<PerspectivePoints>({
+    topLeft: { x: 0, y: 0 },
+    topRight: { x: 0, y: 0 },
+    bottomRight: { x: 0, y: 0 },
+    bottomLeft: { x: 0, y: 0 }
+  })
 
   // Function to center and reset the saved image
   const centerAndResetImage = () => {
-    // Reset points to default centered position
-    setPoints({
-      topLeft: { x: 0, y: 0 },
-      topRight: { x: 200, y: 0 },
-      bottomRight: { x: 200, y: 200 },
-      bottomLeft: { x: 0, y: 200 }
-    });
+    if (!imageSrc) {
+      alert('No image source available');
+      return;
+    }
+
+    // Create a temporary image to get actual dimensions
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      const width = tempImg.naturalWidth;
+      const height = tempImg.naturalHeight;
+      
+      // Reset points using actual image dimensions
+      setPoints({
+        topLeft: { x: 0, y: 0 },
+        topRight: { x: width / 4, y: 0 },
+        bottomRight: { x: width / 4, y: height / 4 },
+        bottomLeft: { x: 0, y: height / 4 }
+      });
+    };
+    tempImg.src = imageSrc;
+    setAspectRatioCompensation(1);
   };
 
   // Get the correct path for assets based on environment
@@ -316,11 +330,14 @@ function ImageProcessorB() {
       
       // Create a temporary image element from the video frame
       const tempImg = new Image();
+      const refImg = new Image();
+      refImg.src = imageSrc || '';
       tempImg.onload = () => {
         detectPaperCorners({
           cv,
           canvas: canvas,
           imageElement: tempImg,
+          refIMG: refImg,
           onCornersDetected: (corners: Corner[]) => {
             console.log('Corners detected:', corners.length);
             setCorners(corners);
@@ -328,16 +345,40 @@ function ImageProcessorB() {
           onPointsUpdated: (points: PerspectivePoints) => {
             console.log('Points updated:', points);
             setPoints(points);
+            setAspectRatioCompensation(refImg.naturalWidth && refImg.naturalHeight ? (refImg.naturalWidth / refImg.naturalHeight) : 1);
           }
         })
       };
       tempImg.src = dataURL; // Use the fresh dataURL directly
-    }, 50); // Capture every 50ms
+    }, 200); // Capture every 200ms
 
     return () => {
       clearInterval(interval);
     };
   }, [cvLoaded, cv, lockImage]);
+
+  // Add useEffect to update points when imageSrc changes
+  useEffect(() => {
+    if (imageSrc) {
+      // Get actual image dimensions when imageSrc is loaded
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        const width = tempImg.naturalWidth;
+        const height = tempImg.naturalHeight;
+        
+        console.log('Setting initial points with image dimensions:', { width, height });
+        
+        // Set points to match the actual image dimensions
+        setPoints({
+          topLeft: { x: 0, y: 0 },
+          topRight: { x: width/2, y: 0 },
+          bottomRight: { x: width/2, y: height/2 },
+          bottomLeft: { x: 0, y: height/2 }
+        });
+      };
+      tempImg.src = imageSrc;
+    }
+  }, [imageSrc]);
 
   if (loadingError) {
     return (
@@ -419,19 +460,15 @@ function ImageProcessorB() {
             ref={canvasRef}
             style={{ width: '512px' }}
           />
-      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: opacity, width: '200px', height: 'auto' }}>
+      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: opacity, maxWidth: '90%', maxHeight: '90%' }}>
         <PerspectiveTransform
       points={points}
-      onPointsChange={setPoints}
-      editable={editable}
-      onEditableChange={setEditable}
     >
         <img 
           src={imageSrc || getAssetPath("/instructions.png")} 
           alt="Instructions" 
           style={{ 
-            border: '1px solid #ccc', width: '200px', height: 'auto'
-          }}
+            border: '1px solid #ccc', transform: `scaleX(${aspectRatioCompensation})`}}
         />
         </PerspectiveTransform>
       </div>
@@ -442,7 +479,7 @@ function ImageProcessorB() {
           ref={sourceImageRef}
           src={getAssetPath("/source1.jpg")} 
           alt="Source for transform" 
-          style={{ display: 'none', width: '0px', height: '0px', transform: `scaleY(${aspectRatioCompensation})` }}
+          style={{ display: 'none' }}
           crossOrigin="anonymous"
         />
         
