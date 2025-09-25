@@ -6,6 +6,7 @@ import { sortCornersClockwise, Corner } from '../../functions/cornerDetection';
 import { applyPerspectiveTransform as applyTransform } from '../../functions/perspectiveTransform';
 import { detectPaperCorners } from '../../functions/paperDetection';
 import { updatePointsFromCorners, PerspectivePoints } from '../../functions/pointsUtils';
+import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 import { usePersistentTransform } from "@/hooks/usePersistentTransform";
 
 function ImageProcessorB() {
@@ -31,6 +32,52 @@ function ImageProcessorB() {
     bottomRight: { x: 0, y: 0 },
     bottomLeft: { x: 0, y: 0 }
   })
+  const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
+   const { 
+    transformState, 
+    setTransformState,
+  } = usePersistentTransform('camera');
+
+  // Initialize transform with saved state
+  useEffect(() => {
+    if (transformRef.current && transformState && lockImage) {
+      transformRef.current.setTransform(
+        transformState.positionX,
+        transformState.positionY,
+        transformState.scale
+      );
+    }
+  }, [transformState, imageSrc]);
+
+  useEffect(() => {
+    if (transformState && lockImage && points && imageRef.current) {
+      const savedImage = localStorage.getItem('savedImage');
+      const originalImage = new Image();
+      originalImage.onload = () => {
+        // alert(`Adjusting scale to ${newScale.toFixed(2)} based on points and image width`);
+      // Apply saved transform immediately after initialization
+        if (transformRef.current && imageRef.current) {
+          transformRef.current.setTransform(
+            0,
+            0,
+            transformState.scale
+          );
+        }
+      };
+      originalImage.src = savedImage || '';
+    }
+  }, [lockImage]);
+
+  const handleTransformEnd = () => {
+    if (!transformRef.current || !transformRef.current.state) return;
+
+    const { scale, positionX, positionY } = transformRef.current.state;
+    setTransformState({
+      scale,
+      positionX,
+      positionY
+    });
+  };
 
   // Function to center and reset the saved image
   const centerAndResetImage = () => {
@@ -417,18 +464,54 @@ function ImageProcessorB() {
             ref={canvasRef}
             style={{ width: '512px' }}
           />
-      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: opacity, maxWidth: '90%', maxHeight: '90%' }}>
-        <PerspectiveTransform
-      points={points}
-    >
-        <img 
-          src={imageSrc || getAssetPath("/instructions.png")} 
-          alt="Instructions" 
-          style={{ 
-            border: '1px solid #ccc', transform: `scaleX(${aspectRatioCompensation})`}}
-        />
-        </PerspectiveTransform>
-      </div>
+      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: opacity, maxWidth: '100%', maxHeight: '100%' }}>
+        
+        
+{lockImage ? (
+  <TransformWrapper
+    ref={transformRef}
+    initialScale={transformState.scale}
+    initialPositionX={transformState.positionX}
+    initialPositionY={transformState.positionY}
+    onPanningStop={handleTransformEnd}
+    onPinchingStop={handleTransformEnd}
+    onInit={(ref) => {
+      transformRef.current = ref;
+      // Apply saved transform immediately after initialization
+      ref.setTransform(
+        transformState.positionX,
+        transformState.positionY,
+        transformState.scale
+      );
+    }}
+    minScale={0.1}
+    limitToBounds={false}
+  >
+    <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+      
+  <PerspectiveTransform
+      points={points}>
+      <img 
+        src={imageSrc || getAssetPath("/instructions.png")} 
+        alt="Instructions" 
+        style={{ 
+          border: '1px solid #ccc', transform: `scaleX(${aspectRatioCompensation})`}}
+      /></PerspectiveTransform>
+    </TransformComponent>
+  </TransformWrapper>
+) : (
+  <PerspectiveTransform
+      points={points}>
+  <img 
+    src={imageSrc || getAssetPath("/instructions.png")} 
+    alt="Instructions" 
+    style={{ 
+      border: '1px solid #ccc', transform: `scaleX(${aspectRatioCompensation})`}}
+  />
+  </PerspectiveTransform>
+)}
+  
+</div>
 
       <div style={{ position: 'absolute', top: '0px', left: '0px', marginTop: '0px', zIndex: 4500, width: '300px', height: '300px' }}>
         {/* Hidden source image for perspective transform */}
