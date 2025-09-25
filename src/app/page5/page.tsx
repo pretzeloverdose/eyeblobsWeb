@@ -6,6 +6,7 @@ import { sortCornersClockwise, Corner } from '../../functions/cornerDetection';
 import { applyPerspectiveTransform as applyTransform } from '../../functions/perspectiveTransform';
 import { detectPaperCorners } from '../../functions/paperDetection';
 import { updatePointsFromCorners, PerspectivePoints } from '../../functions/pointsUtils';
+import { usePersistentTransform } from "@/hooks/usePersistentTransform";
 
 function ImageProcessorB() {
   const [cvLoaded, setCvLoaded] = useState(false)
@@ -14,6 +15,7 @@ function ImageProcessorB() {
   const [loadingStatus, setLoadingStatus] = useState<string>('Initializing...')
   const [corners, setCorners] = useState<Corner[]>([])
   const [showOverlay, setShowOverlay] = useState(false)
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [points, setPoints] = useState<PerspectivePoints>({
     topLeft: { x: 0, y: 0 },
     topRight: { x: 100, y: 0 },
@@ -27,6 +29,8 @@ function ImageProcessorB() {
   const [aspectRatioCompensation, setAspectRatioCompensation] = useState(1);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [sampleImageSrc, setSampleImageSrc] = useState<string | null>(null);
+  const [opacity, setOpacity] = useState(0.7);
+  const [lockImage, setLockImage] = useState(false);
 
   // Get the correct path for assets based on environment
   const getAssetPath = (assetPath: string) => {
@@ -42,6 +46,14 @@ function ImageProcessorB() {
   const getOpenCVPath = () => {
     return getAssetPath('/opencv/opencv.js')
   }
+
+  useEffect(() => {
+    const savedImage = localStorage.getItem('savedImage');
+    if (savedImage) {
+      setImageSrc(savedImage);
+    }
+  }, []);
+
 
   useEffect(() => {
     const loadOpenCV = () => {
@@ -259,6 +271,7 @@ function ImageProcessorB() {
 
     console.log('OpenCV ready, starting capture interval');
     const interval = setInterval(() => {
+      
       // Capture frame first
       if (!videoRef.current || !canvasRef.current) return;
 
@@ -285,6 +298,9 @@ function ImageProcessorB() {
         return
       }
       
+      // Skip capture if image is locked
+      if (lockImage) return;
+      
       console.log('Detecting corners with fresh video frame data')
       
       // Create a temporary image element from the video frame
@@ -310,7 +326,7 @@ function ImageProcessorB() {
     return () => {
       clearInterval(interval);
     };
-  }, [cvLoaded, cv]);
+  }, [cvLoaded, cv, lockImage]);
 
   if (loadingError) {
     return (
@@ -323,32 +339,73 @@ function ImageProcessorB() {
   
   return (
     <div>
-      <h2>Paper Corner Detection</h2>
-      <p>OpenCV Status: {cvLoaded ? 'Ready ✅' : loadingStatus}</p>
-      {cvLoaded && cv && (
-        <p style={{ color: 'green' }}>OpenCV initialized successfully</p>
-      )}
-      <div>
+      <div style={{ padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd", position: "absolute", height: 50, bottom: 100, zIndex: 7000 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+          {/* <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span>AR:</span>
+            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={editable}
+                onChange={(e) => setEditable(e.target.checked)}
+                style={{ marginRight: "8px" }}
+              />
+              <span>{editable ? 'On' : 'Off'}</span>
+            </label>
+          </div> */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span>Lock Image:</span>
+            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={lockImage}
+                onChange={(e) => setLockImage(e.target.checked)}
+                style={{ marginRight: "8px" }}
+              />
+              <span>{lockImage ? 'Unlocked' : 'Locked'}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd", position: "absolute", height: 50, bottom: 50, zIndex: 7000 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span>Opacity:</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={opacity}
+            onChange={(e) => setOpacity(parseFloat(e.target.value))}
+            style={{ flex: 1 }}
+          />
+          <span style={{ width: "40px", textAlign: "right" }}>
+            {Math.round(opacity * 100)}%
+          </span>
+        </div>
+      </div>
+      <div style={{ flex: 1, position: "relative", height: 'calc(100vh - 200px)' }}>
+        {/* Opacity slider controls */}
+      
           <video
             ref={videoRef}
             playsInline
             muted
             style={{ 
               width: "100%", 
-              height: "50%", 
+              height: "100%", 
               backgroundColor: "#000", 
-              zIndex: 20, 
+              zIndex: 0, 
               position: "absolute", 
               top: 0,
-              pointerEvents: "none",
-              display: 'none'
+              pointerEvents: "none"
             }}
           />
           <canvas
             ref={canvasRef}
             style={{ width: '512px' }}
           />
-      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: 0.6, width: '200px', height: 'auto' }}>
+      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: opacity, width: '200px', height: 'auto' }}>
         <PerspectiveTransform
       points={points}
       onPointsChange={setPoints}
@@ -356,7 +413,7 @@ function ImageProcessorB() {
       onEditableChange={setEditable}
     >
         <img 
-          src={getAssetPath("/source1.jpg")} 
+          src={imageSrc || getAssetPath("/instructions.png")} 
           alt="Instructions" 
           style={{ 
             border: '1px solid #ccc', width: '200px', height: 'auto'
@@ -365,7 +422,7 @@ function ImageProcessorB() {
         </PerspectiveTransform>
       </div>
 
-      <div style={{ position: 'absolute', top: '0px', left: '0px', marginTop: '0px', zIndex: 4000, width: '300px', height: '300px' }}>
+      <div style={{ position: 'absolute', top: '0px', left: '0px', marginTop: '0px', zIndex: 4500, width: '300px', height: '300px' }}>
         {/* Hidden source image for perspective transform */}
         <img 
           ref={sourceImageRef}
@@ -396,22 +453,9 @@ function ImageProcessorB() {
             width: '512px'
           }}
         />
-        {!cvLoaded && (
-          <div style={{ 
-            width: '400px', 
-            height: '300px', 
-            border: '1px solid #ccc', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            backgroundColor: '#f5f5f5'
-          }}>
-            Loading OpenCV...
-          </div>
-        )}
       </div>
 </div>
-      {corners.length > 0 && (
+      {/* {corners.length > 0 && (
         <div style={{ position: 'absolute', top: '320px', left: '10px', zIndex: 4000, backgroundColor: 'white', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', width: '300px' }}>
           <h3>Detected Corners:</h3>
           <ul>
@@ -485,7 +529,7 @@ function ImageProcessorB() {
       )}
           <button onClick={handleDetectPaperCorners} style={{ marginTop: '10px' }}>
             Re-detect Corners
-          </button>
+          </button> */}
     </div>
   )
 }
