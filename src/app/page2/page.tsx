@@ -18,9 +18,9 @@ function ImageProcessorB() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [points, setPoints] = useState<PerspectivePoints>({
     topLeft: { x: 0, y: 0 },
-    topRight: { x: 100, y: 0 },
-    bottomRight: { x: 100, y: 100 },
-    bottomLeft: { x: 0, y: 100 }
+    topRight: { x: 200, y: 0 },
+    bottomRight: { x: 200, y: 200 },
+    bottomLeft: { x: 0, y: 200 }
   })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
@@ -31,6 +31,17 @@ function ImageProcessorB() {
   const [sampleImageSrc, setSampleImageSrc] = useState<string | null>(null);
   const [opacity, setOpacity] = useState(0.7);
   const [lockImage, setLockImage] = useState(false);
+
+  // Function to center and reset the saved image
+  const centerAndResetImage = () => {
+    // Reset points to default centered position
+    setPoints({
+      topLeft: { x: 0, y: 0 },
+      topRight: { x: 200, y: 0 },
+      bottomRight: { x: 200, y: 200 },
+      bottomLeft: { x: 0, y: 200 }
+    });
+  };
 
   // Get the correct path for assets based on environment
   const getAssetPath = (assetPath: string) => {
@@ -339,8 +350,8 @@ function ImageProcessorB() {
   
   return (
     <div>
-      <div style={{ padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd", position: "absolute", height: 50, bottom: 100, zIndex: 7000 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+      <div style={{ flex: 1, padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd", position: "absolute", width: "100%", height: 70, bottom: 101, zIndex: 7000 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "24px", float: 'left' }}>
           {/* <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span>AR:</span>
             <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
@@ -354,20 +365,23 @@ function ImageProcessorB() {
             </label>
           </div> */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span>Lock Image:</span>
             <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-              <input
-                type="checkbox"
-                checked={lockImage}
-                onChange={(e) => setLockImage(e.target.checked)}
+              <button
+                onClick={() => setLockImage(!lockImage)}
                 style={{ marginRight: "8px" }}
-              />
-              <span>{lockImage ? 'Unlocked' : 'Locked'}</span>
+              >{lockImage ? 'Unlock Image' : 'Lock Image in place'}</button>
             </label>
           </div>
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", float: 'left' }}>
+          <button
+            onClick={centerAndResetImage}
+          >
+            Reset Image
+          </button>
+        </div>
       </div>
-      <div style={{ padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd", position: "absolute", height: 50, bottom: 50, zIndex: 7000 }}>
+      <div style={{ padding: "16px", backgroundColor: "#f5f5f5", borderTop: "1px solid #ddd", position: "absolute", width: "100%", height: 50, bottom: 50, zIndex: 7000 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span>Opacity:</span>
           <input
