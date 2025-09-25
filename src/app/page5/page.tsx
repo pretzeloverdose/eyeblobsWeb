@@ -140,7 +140,7 @@ function ImageProcessorB() {
     })
   }
 
-  const handleDetectPaperCorners = () => {
+ /*  const handleDetectPaperCorners = () => {
     console.log('handleDetectPaperCorners called', { cv: !!cv, cvLoaded, canvas: !!canvasRef.current, sampleImageSrc: !!sampleImageSrc });
     
     if (!cv) {
@@ -176,7 +176,7 @@ function ImageProcessorB() {
       })
     };
     tempImg.src = sampleImageSrc;
-  }
+  } */
 
   const handleImageLoad = () => {
     console.log('Image loaded, detecting corners...')
@@ -185,12 +185,6 @@ function ImageProcessorB() {
     }
   }
 
-  const handleUpdatePointsFromCorners = () => {
-    const points = updatePointsFromCorners(corners, sortCornersClockwise)
-    if (points) {
-      setPoints(points)
-    }
-  }
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
@@ -263,7 +257,7 @@ function ImageProcessorB() {
   };
 
   // Set up interval to capture frames every second
-  useEffect(() => {
+  /* useEffect(() => {
     if (!cvLoaded || !cv) {
       console.log('OpenCV not ready yet, skipping interval setup');
       return;
@@ -326,7 +320,7 @@ function ImageProcessorB() {
     return () => {
       clearInterval(interval);
     };
-  }, [cvLoaded, cv, lockImage]);
+  }, [cvLoaded, cv, lockImage]); */
 
   if (loadingError) {
     return (

@@ -165,55 +165,10 @@ function ImageProcessorB() {
     })
   }
 
-  const handleDetectPaperCorners = () => {
-    console.log('handleDetectPaperCorners called', { cv: !!cv, cvLoaded, canvas: !!canvasRef.current, sampleImageSrc: !!sampleImageSrc });
-    
-    if (!cv) {
-      alert('OpenCV not ready')
-      return
-    }
-    if (!canvasRef.current) {
-      alert('Canvas not ready')
-      return
-    }
-    if (!sampleImageSrc) {
-      console.log('Sample image not ready')
-      return
-    }
-    
-    alert('All requirements met, detecting corners...')
-    
-    // Create a temporary image element from the video frame
-    const tempImg = new Image();
-    tempImg.onload = () => {
-      detectPaperCorners({
-        cv,
-        canvas: canvasRef.current!,
-        imageElement: tempImg,
-        onCornersDetected: (corners: Corner[]) => {
-          console.log('Corners detected:', corners.length);
-          setCorners(corners);
-        },
-        onPointsUpdated: (points: PerspectivePoints) => {
-          console.log('Points updated:', points);
-          setPoints(points);
-        }
-      })
-    };
-    tempImg.src = sampleImageSrc;
-  }
-
   const handleImageLoad = () => {
     console.log('Image loaded, detecting corners...')
     if (cvLoaded) {
     //  setTimeout(handleDetectPaperCorners, 100)
-    }
-  }
-
-  const handleUpdatePointsFromCorners = () => {
-    const points = updatePointsFromCorners(corners, sortCornersClockwise)
-    if (points) {
-      setPoints(points)
     }
   }
 
@@ -338,6 +293,8 @@ function ImageProcessorB() {
           canvas: canvas,
           imageElement: tempImg,
           refIMG: refImg,
+          width: refImg.naturalWidth,
+          height: refImg.naturalHeight,
           onCornersDetected: (corners: Corner[]) => {
             console.log('Corners detected:', corners.length);
             setCorners(corners);
@@ -345,7 +302,7 @@ function ImageProcessorB() {
           onPointsUpdated: (points: PerspectivePoints) => {
             console.log('Points updated:', points);
             setPoints(points);
-            setAspectRatioCompensation(refImg.naturalWidth && refImg.naturalHeight ? (refImg.naturalWidth / refImg.naturalHeight) : 1);
+          //  setAspectRatioCompensation(refImg.naturalWidth && refImg.naturalHeight ? (refImg.naturalWidth / refImg.naturalHeight) : 1);
           }
         })
       };
