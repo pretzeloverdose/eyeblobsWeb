@@ -414,7 +414,7 @@ function ImageProcessorB() {
               <button
                 onClick={() => setLockImage(!lockImage)}
                 style={{ marginRight: "8px" }}
-              >{lockImage ? 'Unlock Image' : 'Lock Image in place'}</button>
+              >{lockImage ? 'Set automatic positioning' : 'Set position manually'}</button>
             </label>
           </div>
         </div>
