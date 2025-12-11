@@ -494,8 +494,7 @@ function ImageProcessorB() {
       <img 
         src={imageSrc || getAssetPath("/instructions.png")} 
         alt="Instructions" 
-        style={{ 
-          border: '1px solid #ccc', transform: `scaleX(${aspectRatioCompensation})`}}
+        style={{ transform: `scaleX(${aspectRatioCompensation})`}}
       /></PerspectiveTransform>
     </TransformComponent>
   </TransformWrapper>
@@ -505,8 +504,7 @@ function ImageProcessorB() {
   <img 
     src={imageSrc || getAssetPath("/instructions.png")} 
     alt="Instructions" 
-    style={{ 
-      border: '1px solid #ccc', transform: `scaleX(${aspectRatioCompensation})`}}
+    style={{ transform: `scaleX(${aspectRatioCompensation})`}}
   />
   </PerspectiveTransform>
 )}
@@ -535,14 +533,6 @@ function ImageProcessorB() {
             setLoadingError('Failed to load test.jpg image')
           }}
           crossOrigin="anonymous"
-        />
-        <canvas 
-          ref={canvasRef}
-          style={{ 
-            border: '1px solid #ccc',
-            display: cvLoaded ? 'block' : 'none',
-            width: '512px'
-          }}
         />
       </div>
 </div>
