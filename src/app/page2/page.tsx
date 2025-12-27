@@ -414,7 +414,7 @@ function ImageProcessorB() {
               <button
                 onClick={() => setLockImage(!lockImage)}
                 style={{ marginRight: "8px" }}
-              >{lockImage ? 'Unlock Image' : 'Lock Image in place'}</button>
+              >{lockImage ? 'Lock Image in place' : 'Unlock Image'}</button>
             </label>
           </div>
         </div>
@@ -464,7 +464,7 @@ function ImageProcessorB() {
             ref={canvasRef}
             style={{ width: '512px' }}
           />
-      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: opacity, maxWidth: '100%', maxHeight: '100%' }}>
+      <div style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 5000, opacity: opacity, maxWidth: '100%', height: '100%' }}>
         
         
 {lockImage ? (
