@@ -344,11 +344,11 @@ function ImageProcessorB() {
           height: refImg.naturalHeight,
           onCornersDetected: (corners: Corner[]) => {
             console.log('Corners detected:', corners.length);
-            setCorners(corners);
+          //  setCorners(corners);
           },
           onPointsUpdated: (points: PerspectivePoints) => {
             console.log('Points updated:', points);
-            setPoints(points);
+          //  setPoints(points);
           //  setAspectRatioCompensation(refImg.naturalWidth && refImg.naturalHeight ? (refImg.naturalWidth / refImg.naturalHeight) : 1);
           }
         })
@@ -494,7 +494,7 @@ function ImageProcessorB() {
       <img 
         src={imageSrc || getAssetPath("/instructions.png")} 
         alt="Instructions" 
-        style={{ transform: `scaleX(${aspectRatioCompensation})`}}
+      //  style={{ transform: `scaleX(${aspectRatioCompensation})`}}
       /></PerspectiveTransform>
     </TransformComponent>
   </TransformWrapper>
@@ -504,7 +504,7 @@ function ImageProcessorB() {
   <img 
     src={imageSrc || getAssetPath("/instructions.png")} 
     alt="Instructions" 
-    style={{ transform: `scaleX(${aspectRatioCompensation})`}}
+    // style={{ transform: `scaleX(${aspectRatioCompensation})`}}
   />
   </PerspectiveTransform>
 )}
