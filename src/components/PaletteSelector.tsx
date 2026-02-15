@@ -8,7 +8,8 @@ import { extractImageColors } from '../services/imageColorService';
 const paletteMap: any = palettes;
 
 type PaletteSelectorRef = {
-  addToPalette: () => void
+  addToPalette: () => void;
+  extractImageColors: () => void;
 };
 
 type Props = {
@@ -29,6 +30,15 @@ const PaletteSelector = forwardRef<PaletteSelectorRef, Props>(
       if (savedPalette) {
         setSelectedPalette('customPaletteColors');
       }
+  };
+
+  const extractImageColorsFromRef = async () => {
+    setSelectedPalette('Image');
+    localStorage.setItem('selectedPalette', 'Image');
+    const imageColors = await extractImageColors();
+    if (imageColors) {
+      setWorkingPalette(imageColors);
+    }
   };
 
   // Load image colors on initial render
@@ -57,7 +67,8 @@ const PaletteSelector = forwardRef<PaletteSelectorRef, Props>(
     }, []);
 
   useImperativeHandle(ref, () => ({
-    addToPalette
+    addToPalette,
+    extractImageColors: extractImageColorsFromRef
   }));
 
   function getStoredPalette(): number[][] {

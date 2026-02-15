@@ -43,6 +43,7 @@ export default function Page3() {
   const [addSwatchVisible, setAddSwatchVisible] = useState(false);
   type PaletteSelectorRef = {
     addToPalette: () => void;
+    extractImageColors: () => void;
   };
   const paletteSelectorRef = useRef<PaletteSelectorRef>(null);
 
@@ -377,6 +378,10 @@ export default function Page3() {
     setPixelColor(rgbToHex(color));
   }
 
+  const extractColors = () => {
+    paletteSelectorRef.current?.extractImageColors();
+  }
+
   return (
     <div>
       {addSwatchVisible && (
@@ -466,6 +471,7 @@ export default function Page3() {
           <button onClick={flipImageHorizontally} className="editButton">Flip Horizontally</button>
           <button onClick={flipImageVertically} className="editButton">Flip Vertically</button>
           <button onClick={applyPalette} className='editButton'>Apply Palette to Image</button>
+          <button onClick={extractColors} className='editButton'>Extract colors from Image</button>
           <button onClick={revertToOriginal} className='editButton'>Revert to Original Image</button>
         </div>
       </div>
