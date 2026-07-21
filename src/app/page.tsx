@@ -260,7 +260,6 @@ useEffect(() => {
         <h1>Welcome to the site!</h1>
         <p>This site is designed to assist traditional artists with a reverse lightbox, grid reference system and colour matching and editing.</p>
         <p>Intended for mobile and tablet, some features are not available on desktop.</p>
-        <p style={{ fontSize: '14px'}}>❤️ If you would like to help support the site, you can buy me a coffee at <a style={{ color: '#0071bd' }} href='https://buymeacoffee.com/pretzeloverdose' target='_blank' rel='noopener noreferrer'>buymeacoffee.com/pretzeloverdose</a> ❤️</p>
         <p><b>To begin, simply upload your reference image.</b></p>
       </>
     );
